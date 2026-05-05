@@ -1,0 +1,33 @@
+<div class="search-container">
+  <div class="search-input-wrapper">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search cryptocurrencies..."
+      [(ngModel)]="searchQuery"
+      (input)="onSearchInput()"
+      (blur)="onBlur()"
+      (focus)="onFocus()" />
+    @if (isSearching) {
+      <span class="search-spinner"></span>
+    }
+  </div>
+
+  @if (showResults) {
+    <div class="search-results">
+      @for (coin of results; track coin.id) {
+        <div class="search-result-item" (mousedown)="selectResult(coin)">
+          <img [src]="coin.thumb" [alt]="coin.name" class="result-icon" />
+          <div class="result-info">
+            <span class="result-name">{{ coin.name }}</span>
+            <span class="result-symbol">{{ coin.symbol | uppercase }}</span>
+          </div>
+          @if (coin.market_cap_rank) {
+            <span class="result-rank">#{{ coin.market_cap_rank }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

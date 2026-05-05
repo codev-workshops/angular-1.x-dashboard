@@ -1,0 +1,23 @@
+<header class="app-header">
+  <div class="header-left">
+    <h1 class="app-title">
+      <span class="title-icon">📊</span>
+      CryptoTicker
+    </h1>
+    <span class="subtitle">Live Dashboard</span>
+  </div>
+
+  <div class="header-center">
+    <app-search-bar (assetSelected)="onAssetSelected($event)" />
+  </div>
+
+  <div class="header-right">
+    <div class="last-updated">
+      <span class="update-label">Last updated</span>
+      <span class="update-time">{{ cryptoApi.getLastUpdated() | async | date:'mediumTime' }}</span>
+    </div>
+    <button class="theme-toggle" (click)="onToggleTheme()" aria-label="Toggle theme">
+      {{ (themeService.getTheme() | async) === 'dark' ? '☀️' : '🌙' }}
+    </button>
+  </div>
+</header>

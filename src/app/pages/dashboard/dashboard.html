@@ -1,0 +1,80 @@
+<app-header (assetSearched)="onAssetSearched($event)" />
+
+<main class="dashboard-container">
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="loader"></div>
+      <p>Loading market data...</p>
+    </div>
+  } @else if (errorMessage && assets.length === 0) {
+    <div class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>{{ errorMessage }}</p>
+    </div>
+  } @else {
+    @if (errorMessage) {
+      <div class="error-banner">
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <!-- Asset Detail Modal -->
+    @if (selectedAsset) {
+      <div class="detail-overlay" (click)="closeDetail()">
+        <div class="detail-modal" (click)="$event.stopPropagation()">
+          <button class="close-btn" (click)="closeDetail()">✕</button>
+          <div class="detail-header">
+            <img [src]="selectedAsset.image" [alt]="selectedAsset.name" class="detail-icon" />
+            <div>
+              <h2 class="detail-name">{{ selectedAsset.name }}</h2>
+              <span class="detail-symbol">{{ selectedAsset.symbol | uppercase }}</span>
+            </div>
+          </div>
+          <div class="detail-price">
+            <span class="detail-current-price">
+              {{ selectedAsset.currentPrice | currency:'USD' }}
+            </span>
+            <span
+              class="detail-change"
+              [class.positive]="selectedAsset.priceChangePercentage24h >= 0"
+              [class.negative]="selectedAsset.priceChangePercentage24h < 0">
+              {{ selectedAsset.priceChangePercentage24h >= 0 ? '+' : '' }}{{ selectedAsset.priceChangePercentage24h | number:'1.2-2' }}%
+            </span>
+          </div>
+          <div class="detail-chart">
+            <h3>7-Day Price Chart</h3>
+            <canvas #detailCanvas class="detail-canvas"></canvas>
+          </div>
+          <div class="detail-stats">
+            <div class="detail-stat">
+              <span class="detail-stat-label">Market Cap</span>
+              <span class="detail-stat-value">{{ selectedAsset.marketCap | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="detail-stat">
+              <span class="detail-stat-label">24h Volume</span>
+              <span class="detail-stat-value">{{ selectedAsset.totalVolume | currency:'USD':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="assets-grid">
+      @for (asset of assets; track asset.id) {
+        <app-asset-card
+          [asset]="asset"
+          [isWatchlisted]="isWatchlisted(asset.id)"
+          (toggleWatchlist)="toggleWatchlist($event)"
+          (selectAsset)="selectAsset($event)" />
+      }
+    </div>
+
+    @if (assets.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        <h3>No assets in your watchlist</h3>
+        <p>Use the search bar to find and add cryptocurrencies</p>
+      </div>
+    }
+  }
+</main>

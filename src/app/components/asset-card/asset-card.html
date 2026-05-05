@@ -1,0 +1,43 @@
+<div class="asset-card" (click)="onSelect()" [class.watchlisted]="isWatchlisted">
+  <div class="card-header">
+    <div class="asset-info">
+      <img [src]="asset.image" [alt]="asset.name" class="asset-icon" />
+      <div class="asset-names">
+        <span class="asset-name">{{ asset.name }}</span>
+        <span class="asset-symbol">{{ asset.symbol | uppercase }}</span>
+      </div>
+    </div>
+    <button
+      class="watchlist-btn"
+      [class.active]="isWatchlisted"
+      (click)="onToggleWatchlist($event)"
+      [attr.aria-label]="isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'">
+      {{ isWatchlisted ? '★' : '☆' }}
+    </button>
+  </div>
+
+  <div class="card-body">
+    <div class="price-section">
+      <span class="current-price">{{ formattedPrice }}</span>
+      <app-price-indicator [change]="asset.priceChangePercentage24h" />
+    </div>
+    <div class="chart-section">
+      <app-sparkline-chart
+        [data]="asset.sparklineIn7d"
+        [color]="sparklineColor"
+        [width]="120"
+        [height]="40" />
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="stat">
+      <span class="stat-label">Market Cap</span>
+      <span class="stat-value">{{ formattedMarketCap }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Volume (24h)</span>
+      <span class="stat-value">{{ formattedVolume }}</span>
+    </div>
+  </div>
+</div>

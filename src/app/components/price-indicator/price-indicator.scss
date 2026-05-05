@@ -1,0 +1,24 @@
+.price-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+
+  &.positive {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+  }
+
+  &.negative {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  .arrow {
+    font-size: 0.7rem;
+  }
+}

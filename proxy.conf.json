@@ -1,0 +1,10 @@
+{
+  "/api/coingecko": {
+    "target": "https://api.coingecko.com",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/coingecko": "/api/v3"
+    }
+  }
+}
