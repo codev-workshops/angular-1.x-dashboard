@@ -1,7 +1,5 @@
 node_modules/
-bower_components/
-.sass-cache/
-.tmp/
 dist/
-/demo/
-/coverage
+.tmp/
+bower_components/
+write_files*.py
