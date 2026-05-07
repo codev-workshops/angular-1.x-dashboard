@@ -10,6 +10,7 @@ function convertToDefinition(d) {
 export default class WidgetDefCollection extends Array {
   constructor(widgetDefs) {
     super();
+    if (!Array.isArray(widgetDefs)) widgetDefs = [];
     widgetDefs = widgetDefs.map(convertToDefinition);
     this.push(...widgetDefs);
 
