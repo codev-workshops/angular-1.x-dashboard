@@ -15,8 +15,10 @@ let globalId = 0;
 
 export default class WidgetModel {
   constructor(widgetDefinition, overrides) {
-    Object.assign(this, defaults(), _.merge({}, _.cloneDeep(_.omit(widgetDefinition, ['dataModelType'])), overrides));
+    const nonCloneable = ['dataModelType', 'dataModelArgs'];
+    Object.assign(this, defaults(), _.merge({}, _.cloneDeep(_.omit(widgetDefinition, nonCloneable)), overrides));
     if (widgetDefinition.dataModelType) this.dataModelType = widgetDefinition.dataModelType;
+    if (widgetDefinition.dataModelArgs) this.dataModelArgs = widgetDefinition.dataModelArgs;
     this.wid = ++globalId;
 
     this.updateContainerStyle(this.style);
