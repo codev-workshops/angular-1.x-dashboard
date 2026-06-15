@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import _ from 'lodash';
 import { WidgetModel } from '../../models/WidgetModel';
 import { WidgetDefCollection } from '../../models/WidgetDefCollection';
 import { DashboardState } from '../../models/DashboardState';
@@ -13,6 +12,7 @@ export interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
   const [widgets, setWidgets] = useState<WidgetModel[]>([]);
+  const [unsavedChangeCount, setUnsavedChangeCount] = useState(0);
   const widgetDefsRef = useRef<WidgetDefCollection | null>(null);
   const dashboardStateRef = useRef<DashboardState | null>(null);
   const countRef = useRef(1);
@@ -87,19 +87,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
   );
 
   const saveDashboard = useCallback(
-    (force?: boolean) => {
+    (force?: boolean, widgetsToSave?: WidgetModel[]) => {
+      const target = widgetsToSave ?? widgets;
       if (!mergedOptions.explicitSave) {
-        dashboardStateRef.current?.save(widgets);
+        dashboardStateRef.current?.save(target);
       } else {
         if (force) {
-          mergedOptions.unsavedChangeCount = 0;
-          dashboardStateRef.current?.save(widgets);
+          setUnsavedChangeCount(0);
+          dashboardStateRef.current?.save(target);
         } else {
-          mergedOptions.unsavedChangeCount = (mergedOptions.unsavedChangeCount || 0) + 1;
+          setUnsavedChangeCount((prev) => prev + 1);
         }
       }
     },
-    [widgets, mergedOptions]
+    [widgets, mergedOptions.explicitSave]
   );
 
   const addWidget = useCallback(
@@ -157,6 +158,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
         }
       });
       setWidgets(newWidgets);
+      return newWidgets;
     },
     []
   );
@@ -172,11 +174,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
   );
 
   const resetWidgetsToDefault = useCallback(() => {
+    let newWidgets: WidgetModel[] = [];
     if (mergedOptions.defaultWidgets) {
-      loadWidgets(mergedOptions.defaultWidgets);
+      newWidgets = loadWidgets(mergedOptions.defaultWidgets);
     }
-    setTimeout(() => saveDashboard());
-  }, [mergedOptions.defaultWidgets, loadWidgets, saveDashboard]);
+    setTimeout(() => dashboardStateRef.current?.save(newWidgets));
+  }, [mergedOptions.defaultWidgets, loadWidgets]);
 
   const handleWidgetChanged = useCallback(
     (_widget: WidgetModel) => {
@@ -196,7 +199,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
     (options as any).clear = clearWidgets;
     (options as any).resetWidgetsToDefault = resetWidgetsToDefault;
     (options as any).currentWidgets = widgets;
-  }, [options, addWidget, prependWidget, loadWidgets, saveDashboard, removeWidget, clearWidgets, resetWidgetsToDefault, widgets]);
+    (options as any).unsavedChangeCount = unsavedChangeCount;
+  }, [options, addWidget, prependWidget, loadWidgets, saveDashboard, removeWidget, clearWidgets, resetWidgetsToDefault, widgets, unsavedChangeCount]);
 
   return (
     <div>
@@ -252,11 +256,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
             <button
               className="btn btn-success"
               onClick={() => saveDashboard(true)}
-              disabled={!mergedOptions.unsavedChangeCount}
+              disabled={!unsavedChangeCount}
             >
-              {!mergedOptions.unsavedChangeCount
+              {!unsavedChangeCount
                 ? 'all saved'
-                : `save changes (${mergedOptions.unsavedChangeCount})`}
+                : `save changes (${unsavedChangeCount})`}
             </button>
           )}
 
@@ -269,7 +273,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
       <div className="dashboard-widget-area">
         {widgets.map((widget, index) => (
           <Widget
-            key={widget.name + '-' + index}
+            key={widget._id}
             widget={widget}
             hideClose={mergedOptions.hideWidgetClose}
             hideSettings={mergedOptions.hideWidgetSettings}

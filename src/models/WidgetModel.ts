@@ -21,7 +21,10 @@ function getDefaults(): WidgetModelDefaults {
   };
 }
 
+let nextWidgetId = 1;
+
 export class WidgetModel {
+  readonly _id: number;
   title!: string;
   name!: string;
   style!: Record<string, string>;
@@ -45,6 +48,7 @@ export class WidgetModel {
   [key: string]: any;
 
   constructor(widgetDefinition: WidgetDefinition, overrides?: Partial<WidgetDefinition>) {
+    this._id = nextWidgetId++;
     const merged = _.merge(_.cloneDeep(widgetDefinition), overrides);
     Object.assign(this, getDefaults(), merged);
 
