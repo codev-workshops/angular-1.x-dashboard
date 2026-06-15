@@ -23,7 +23,7 @@ export interface WidgetDefinition {
 export interface WidgetDataModelBase {
   dataAttrName?: string;
   dataModelOptions?: Record<string, any>;
-  setup(widget: { dataAttrName?: string; dataModelOptions?: Record<string, any> }, setState: (data: any) => void): void;
+  setup(widget: { dataAttrName?: string; dataModelOptions?: Record<string, any> }, scope: { widgetData?: any }): void;
   updateScope(data: any): void;
   init(): void;
   destroy(): void;
