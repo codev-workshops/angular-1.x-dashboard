@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { LayoutStorage, LayoutDefinition, LayoutStorageOptions } from '../../models/LayoutStorage';
 import { Dashboard } from '../Dashboard';
+import { SaveChangesModal } from '../SaveChangesModal';
 
 export interface DashboardLayoutsProps {
   options: LayoutStorageOptions;
@@ -16,6 +17,7 @@ export const DashboardLayouts: React.FC<DashboardLayoutsProps> = ({
   const layoutStorageRef = useRef<LayoutStorage>(new LayoutStorage(options));
   const [layouts, setLayouts] = useState<LayoutDefinition[]>(layoutStorageRef.current.layouts);
   const [, forceUpdate] = useState(0);
+  const [pendingLayout, setPendingLayout] = useState<LayoutDefinition | null>(null);
 
   const refresh = useCallback(() => {
     setLayouts([...layoutStorageRef.current.layouts]);
@@ -63,13 +65,39 @@ export const DashboardLayouts: React.FC<DashboardLayoutsProps> = ({
           if (shouldSave) {
             current.dashboard.saveDashboard?.();
           }
+          makeLayoutActiveInternal(layout);
+        } else {
+          setPendingLayout(layout);
+          return;
         }
+      } else {
+        makeLayoutActiveInternal(layout);
       }
-
-      makeLayoutActiveInternal(layout);
     },
     [onUnsavedChangesConfirm, makeLayoutActiveInternal]
   );
+
+  const handleSaveChanges = useCallback(() => {
+    const current = layoutStorageRef.current.getActiveLayout();
+    if (current) {
+      current.dashboard.saveDashboard?.();
+    }
+    if (pendingLayout) {
+      makeLayoutActiveInternal(pendingLayout);
+    }
+    setPendingLayout(null);
+  }, [pendingLayout, makeLayoutActiveInternal]);
+
+  const handleDiscardChanges = useCallback(() => {
+    if (pendingLayout) {
+      makeLayoutActiveInternal(pendingLayout);
+    }
+    setPendingLayout(null);
+  }, [pendingLayout, makeLayoutActiveInternal]);
+
+  const handleCancelSwitch = useCallback(() => {
+    setPendingLayout(null);
+  }, []);
 
   const handleEditTitle = useCallback(
     (layout: LayoutDefinition) => {
@@ -178,6 +206,15 @@ export const DashboardLayouts: React.FC<DashboardLayoutsProps> = ({
         >
           {children}
         </Dashboard>
+      )}
+
+      {pendingLayout && activeLayout && (
+        <SaveChangesModal
+          layoutTitle={activeLayout.title}
+          onSave={handleSaveChanges}
+          onDiscard={handleDiscardChanges}
+          onCancel={handleCancelSwitch}
+        />
       )}
     </div>
   );

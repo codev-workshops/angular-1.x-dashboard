@@ -34,8 +34,8 @@ export const WidgetSettingsModal: React.FC<WidgetSettingsModalProps> = ({
   }, [onDismiss]);
 
   return (
-    <div className="modal-backdrop-overlay" style={backdropStyle}>
-      <div className="modal-dialog" style={dialogStyle}>
+    <div className="modal-backdrop-overlay">
+      <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
             <button
@@ -93,23 +93,4 @@ export const WidgetSettingsModal: React.FC<WidgetSettingsModalProps> = ({
       </div>
     </div>
   );
-};
-
-const backdropStyle: React.CSSProperties = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1050,
-};
-
-const dialogStyle: React.CSSProperties = {
-  maxWidth: '600px',
-  width: '100%',
-  margin: '0 auto',
 };

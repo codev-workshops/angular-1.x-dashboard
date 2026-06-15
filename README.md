@@ -1,11 +1,10 @@
 # malhar-angular-dashboard (React Migration)
 
-Dashboard/widget framework — migrating from AngularJS 1.x to React 18 + TypeScript + Vite.
+Dashboard/widget framework — fully migrated from AngularJS 1.x to React 18 + TypeScript + Vite.
 
 ## Status
 
-**Phase 3 complete**: All models ported, React components created with drag-and-drop (sortable), 8-direction resize handles, and widget settings modal. 115 passing tests.
-Legacy AngularJS source preserved in `legacy/` for reference during migration.
+**Migration complete (Phase 4)**. All models, components, and interactive features ported. Legacy AngularJS source removed. 121 tests passing.
 
 ## Tech Stack
 
@@ -19,7 +18,7 @@ Legacy AngularJS source preserved in `legacy/` for reference during migration.
 
 ```bash
 npm install
-npm run dev       # Vite dev server
+npm run dev       # Vite dev server (HMR)
 npm run build     # TypeScript check + Vite production build
 npm test          # Jest unit tests
 npm run lint      # ESLint
@@ -29,30 +28,35 @@ npm run lint      # ESLint
 
 ```
 src/
-  types/index.ts                 # Shared TypeScript interfaces
+  index.ts                         # Barrel export for all public API
+  styles/dashboard.css             # Styles for widgets, resize handles, modals, layout tabs
+  types/index.ts                   # Shared TypeScript interfaces
   models/
-    WidgetDataModel.ts           # Base data model class
-    WidgetDefCollection.ts       # Widget definition registry
-    WidgetModel.ts               # Widget instance model
-    DashboardState.ts            # Persistence: save/load widget state
-    LayoutStorage.ts             # Multiple dashboard layout management
+    WidgetDataModel.ts             # Base data model class
+    WidgetDefCollection.ts         # Widget definition registry
+    WidgetModel.ts                 # Widget instance model (size, style, serialize)
+    DashboardState.ts              # Persistence: save/load widget state
+    LayoutStorage.ts               # Multiple dashboard layout management
   hooks/
-    useWidgetData.ts             # React hook for data model lifecycle
-    useResize.ts                 # 8-direction widget resize with marquee preview
+    useWidgetData.ts               # React hook for data model lifecycle
+    useResize.ts                   # 8-direction widget resize with marquee preview
   components/
-    Widget/Widget.tsx            # Individual widget: resize handles, title editing, collapse, data model, drag handle
-    Dashboard/Dashboard.tsx      # Main dashboard: drag-and-drop sorting, settings modal, toolbar, save state
-    DashboardLayouts/            # Tab-based multi-layout management
-    WidgetSettingsModal/         # Modal dialog for editing widget properties
-legacy/                          # Original AngularJS source (reference only)
+    Widget/                        # Individual widget: resize handles, drag handle, title editing, collapse
+    Dashboard/                     # Main dashboard: drag-and-drop sorting, settings modal, toolbar
+    DashboardLayouts/              # Tab-based multi-layout management with save confirmation
+    WidgetSettingsModal/           # Modal for editing widget properties
+    SaveChangesModal/              # Confirmation modal for unsaved layout changes
 ```
 
-## Migration Phases
+## Features
 
-1. **Phase 1** — Core models + types + React hook wrapper
-2. **Phase 2** — DashboardState, LayoutStorage models + Widget, Dashboard, DashboardLayouts components
-3. **Phase 3 (current)** — Drag-and-drop (sortable), 8-direction resize, widget settings modal
-4. Phase 4 — Cleanup legacy directory, final polish
+- **Drag-and-drop widget reordering** — powered by @dnd-kit, drag via widget header
+- **8-direction resize** — nw/n/ne/w/e/sw/s/se with marquee preview, min/max constraints, aspect ratio support
+- **Widget settings modal** — edit title and custom properties, deep-cloned state
+- **Save changes modal** — confirmation when switching layouts with unsaved changes
+- **Persistent storage** — sync/async storage with hash-based cache invalidation
+- **Multi-layout tabs** — create, rename, remove, and switch between dashboard layouts
+- **Explicit save mode** — optional manual save with unsaved change counter
 
 ## Original Project
 
