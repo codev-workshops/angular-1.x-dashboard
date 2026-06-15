@@ -11,7 +11,7 @@ export interface WidgetDefinition {
   dataAttrName?: string;
   storageHash?: string;
   settingsModalOptions?: Record<string, any>;
-  size?: { width?: string; height?: string; minWidth?: string };
+  size?: { width?: string; height?: string; minWidth?: string; minHeight?: string; heightToWidthRatio?: number; contentOverflow?: string };
   style?: Record<string, string>;
   enableVerticalResize?: boolean;
   onSettingsClose?: (result: any) => void;

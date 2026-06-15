@@ -17,7 +17,7 @@ npm run lint         # ESLint --ext .ts,.tsx src/
 ## Key Conventions
 
 - **TypeScript strict mode** — `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`
-- **Test files** — co-located as `*.spec.ts` next to source files
+- **Test files** — co-located as `*.spec.ts` / `*.spec.tsx` next to source files (test files excluded from `tsc` build via tsconfig `exclude`)
 - **Jest** — ts-jest preset, jsdom environment
 - **Lodash** — used for `merge`, `cloneDeep`, `has`, `endsWith`, `max`, `pick`, `map`, `clone` (carried over from original AngularJS codebase)
 - **No `structuredClone`** — use `_.cloneDeep` instead (jsdom test environment doesn't support `structuredClone`)
@@ -33,13 +33,20 @@ npm run lint         # ESLint --ext .ts,.tsx src/
   - `WidgetModel` — widget instance with size/style management
   - `DashboardState` — save/load widget state to/from storage
   - `LayoutStorage` — multiple dashboard layout persistence
-- `src/hooks/useWidgetData.ts` — React hook wrapping WidgetDataModel lifecycle
+- `src/hooks/`
+  - `useWidgetData.ts` — React hook wrapping WidgetDataModel lifecycle
+  - `useResize.ts` — 8-direction widget resize with marquee preview (ported from DashboardWidgetCtrl.js `grabResizer`)
 - `src/components/`
-  - `Widget/` — individual widget container with title editing, collapse toggle, data model lifecycle
-  - `Dashboard/` — main dashboard: add/remove/clear widgets, toolbar, save state, load from storage
+  - `Widget/` — individual widget with resize handles (8 directions), drag handle (via `dragListeners` prop), title editing, collapse toggle, data model lifecycle
+  - `Dashboard/` — main dashboard: @dnd-kit sortable drag-and-drop, settings modal integration, add/remove/clear widgets, toolbar, save state
   - `DashboardLayouts/` — tab-based multi-layout management
+  - `WidgetSettingsModal/` — modal dialog for editing widget title and properties (replaces `$uibModal` + `WidgetSettingsCtrl`)
 - `legacy/` — original AngularJS source for reference during migration
 
 ## Migration Status
 
-Phase 2 complete: DashboardState, LayoutStorage models + Widget, Dashboard, DashboardLayouts React components. 72 tests passing.
+Phase 3 complete: Drag-and-drop sorting (@dnd-kit), 8-direction resize handles (useResize hook), widget settings modal. 115 tests passing.
+
+## Dependencies Added in Phase 3
+
+- `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` — widget drag-and-drop reordering

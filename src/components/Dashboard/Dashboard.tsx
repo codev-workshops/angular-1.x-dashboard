@@ -1,8 +1,25 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import _ from 'lodash';
 import { WidgetModel } from '../../models/WidgetModel';
 import { WidgetDefCollection } from '../../models/WidgetDefCollection';
 import { DashboardState } from '../../models/DashboardState';
 import { Widget } from '../Widget';
+import { WidgetSettingsModal } from '../WidgetSettingsModal';
 import { DashboardOptions, WidgetDefinition } from '../../types';
 
 export interface DashboardProps {
@@ -10,12 +27,69 @@ export interface DashboardProps {
   children?: (widget: WidgetModel, index: number) => React.ReactNode;
 }
 
+interface SortableWidgetProps {
+  widget: WidgetModel;
+  index: number;
+  hideClose?: boolean;
+  hideSettings?: boolean;
+  hideWidgetName?: boolean;
+  onRemove: (widget: WidgetModel) => void;
+  onSettingsOpen: (widget: WidgetModel) => void;
+  onChanged: (widget: WidgetModel) => void;
+  children?: React.ReactNode;
+}
+
+const SortableWidget: React.FC<SortableWidgetProps> = ({
+  widget,
+  index: _index,
+  hideClose,
+  hideSettings,
+  hideWidgetName,
+  onRemove,
+  onSettingsOpen,
+  onChanged,
+  children,
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: String(widget._id),
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition ?? undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <Widget
+        widget={widget}
+        hideClose={hideClose}
+        hideSettings={hideSettings}
+        hideWidgetName={hideWidgetName}
+        onRemove={onRemove}
+        onSettingsOpen={onSettingsOpen}
+        onChanged={onChanged}
+        dragListeners={listeners}
+      >
+        {children}
+      </Widget>
+    </div>
+  );
+};
+
 export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
   const [widgets, setWidgets] = useState<WidgetModel[]>([]);
   const [unsavedChangeCount, setUnsavedChangeCount] = useState(0);
+  const [settingsWidget, setSettingsWidget] = useState<WidgetModel | null>(null);
   const widgetDefsRef = useRef<WidgetDefCollection | null>(null);
   const dashboardStateRef = useRef<DashboardState | null>(null);
   const countRef = useRef(1);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
+  );
 
   const defaults = {
     stringifyStorage: true,
@@ -188,6 +262,48 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
     [saveDashboard]
   );
 
+  const openWidgetSettings = useCallback((widget: WidgetModel) => {
+    setSettingsWidget(widget);
+  }, []);
+
+  const handleSettingsClose = useCallback(
+    (result: Record<string, any>) => {
+      if (settingsWidget) {
+        const onClose = settingsWidget.onSettingsClose || mergedOptions.onSettingsClose;
+        onClose(result, settingsWidget);
+        saveDashboard();
+      }
+      setSettingsWidget(null);
+    },
+    [settingsWidget, mergedOptions.onSettingsClose, saveDashboard]
+  );
+
+  const handleSettingsDismiss = useCallback(
+    (reason: string) => {
+      const onDismiss = settingsWidget?.onSettingsDismiss || mergedOptions.onSettingsDismiss;
+      onDismiss(reason);
+      setSettingsWidget(null);
+    },
+    [settingsWidget, mergedOptions.onSettingsDismiss]
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      setWidgets((prev) => {
+        const oldIndex = prev.findIndex((w) => String(w._id) === String(active.id));
+        const newIndex = prev.findIndex((w) => String(w._id) === String(over.id));
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        const next = arrayMove(prev, oldIndex, newIndex);
+        setTimeout(() => dashboardStateRef.current?.save(next));
+        return next;
+      });
+    },
+    []
+  );
+
   // Expose API on options object for external use
   useEffect(() => {
     (options as any).addWidget = addWidget;
@@ -196,11 +312,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
     (options as any).saveDashboard = (force?: boolean) =>
       saveDashboard(force !== undefined ? force : true);
     (options as any).removeWidget = removeWidget;
+    (options as any).openWidgetSettings = openWidgetSettings;
     (options as any).clear = clearWidgets;
     (options as any).resetWidgetsToDefault = resetWidgetsToDefault;
     (options as any).currentWidgets = widgets;
     (options as any).unsavedChangeCount = unsavedChangeCount;
-  }, [options, addWidget, prependWidget, loadWidgets, saveDashboard, removeWidget, clearWidgets, resetWidgetsToDefault, widgets, unsavedChangeCount]);
+  }, [options, addWidget, prependWidget, loadWidgets, saveDashboard, removeWidget, openWidgetSettings, clearWidgets, resetWidgetsToDefault, widgets, unsavedChangeCount]);
 
   return (
     <div>
@@ -270,20 +387,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ options, children }) => {
         </div>
       )}
 
-      <div className="dashboard-widget-area">
-        {widgets.map((widget, index) => (
-          <Widget
-            key={widget._id}
-            widget={widget}
-            hideClose={mergedOptions.hideWidgetClose}
-            hideSettings={mergedOptions.hideWidgetSettings}
-            onRemove={removeWidget}
-            onChanged={handleWidgetChanged}
-          >
-            {children?.(widget, index)}
-          </Widget>
-        ))}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={widgets.map((w) => String(w._id))} strategy={verticalListSortingStrategy}>
+          <div className="dashboard-widget-area">
+            {widgets.map((widget, index) => (
+              <SortableWidget
+                key={widget._id}
+                widget={widget}
+                index={index}
+                hideClose={mergedOptions.hideWidgetClose}
+                hideSettings={mergedOptions.hideWidgetSettings}
+                hideWidgetName={mergedOptions.hideWidgetName}
+                onRemove={removeWidget}
+                onSettingsOpen={openWidgetSettings}
+                onChanged={handleWidgetChanged}
+              >
+                {children?.(widget, index)}
+              </SortableWidget>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {settingsWidget && (
+        <WidgetSettingsModal
+          widget={settingsWidget}
+          onClose={handleSettingsClose}
+          onDismiss={handleSettingsDismiss}
+        />
+      )}
     </div>
   );
 };
