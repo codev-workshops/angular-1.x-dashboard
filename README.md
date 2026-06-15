@@ -4,7 +4,7 @@ Dashboard/widget framework — migrating from AngularJS 1.x to React 18 + TypeSc
 
 ## Status
 
-**Phase 1 complete**: Core model layer ported (WidgetDataModel, WidgetDefCollection, WidgetModel) with full test coverage.
+**Phase 2 complete**: All models ported (WidgetDataModel, WidgetDefCollection, WidgetModel, DashboardState, LayoutStorage) and React components created (Widget, Dashboard, DashboardLayouts) with 72 passing tests.
 Legacy AngularJS source preserved in `legacy/` for reference during migration.
 
 ## Tech Stack
@@ -31,25 +31,24 @@ src/
   types/index.ts                 # Shared TypeScript interfaces
   models/
     WidgetDataModel.ts           # Base data model class
-    WidgetDataModel.spec.ts
     WidgetDefCollection.ts       # Widget definition registry
-    WidgetDefCollection.spec.ts
     WidgetModel.ts               # Widget instance model
-    WidgetModel.spec.ts
+    DashboardState.ts            # Persistence: save/load widget state
+    LayoutStorage.ts             # Multiple dashboard layout management
   hooks/
     useWidgetData.ts             # React hook for data model lifecycle
   components/
-    Widget/                      # (future) Widget component
-    Dashboard/                   # (future) Dashboard component
-    DashboardLayouts/            # (future) Layout management
+    Widget/Widget.tsx            # Individual widget container with title editing, collapse, data model
+    Dashboard/Dashboard.tsx      # Main dashboard: add/remove widgets, toolbar, save state
+    DashboardLayouts/            # Tab-based multi-layout management
 legacy/                          # Original AngularJS source (reference only)
 ```
 
 ## Migration Phases
 
-1. **Phase 1 (current)** — Core models + types + React hook wrapper
-2. Phase 2 — Widget component, Dashboard component, DashboardLayouts
-3. Phase 3 — Storage, drag-and-drop, resize, settings modals
+1. **Phase 1** — Core models + types + React hook wrapper
+2. **Phase 2 (current)** — DashboardState, LayoutStorage models + Widget, Dashboard, DashboardLayouts components
+3. Phase 3 — Drag-and-drop (sortable), resize, settings modals
 4. Phase 4 — Cleanup legacy directory, final polish
 
 ## Original Project

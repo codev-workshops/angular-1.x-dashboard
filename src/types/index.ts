@@ -47,7 +47,11 @@ export interface DashboardOptions {
   sortableOptions?: Record<string, any>;
   hideWidgetSettings?: boolean;
   hideWidgetClose?: boolean;
+  hideToolbar?: boolean;
+  hideWidgetName?: boolean;
   settingsModalOptions?: Record<string, any>;
   onSettingsClose?: (result: any) => void;
   onSettingsDismiss?: (reason: any) => void;
+  unsavedChangeCount?: number;
+  [key: string]: any;
 }
