@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devin CLI Blitz Demo -- angular-dashboard Edition</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #1a1a2e;
+      --accent: #0f3460;
+      --accent-light: #e8f0fe;
+      --code-bg: #f4f5f7;
+      --border: #d0d7de;
+      --narrator-bg: #fff8e1;
+      --narrator-border: #f9a825;
+      --green: #1b7a3d;
+      --mono: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--sans);
+      color: var(--fg);
+      background: var(--bg);
+      line-height: 1.7;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: var(--accent);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 2.5rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--accent);
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p, li { margin-bottom: 0.5rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+
+    .meta {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 0.25rem;
+    }
+
+    .meta strong { color: var(--fg); }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1rem;
+      line-height: 1.5;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+    }
+
+    .narrator {
+      background: var(--narrator-bg);
+      border-left: 4px solid var(--narrator-border);
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0 1rem;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      font-size: 0.93rem;
+    }
+
+    .narrator strong { font-style: normal; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: var(--accent);
+      color: #fff;
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      font-weight: 600;
+    }
+
+    th:first-child { border-radius: 6px 0 0 0; }
+    th:last-child { border-radius: 0 6px 0 0; }
+
+    td {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:nth-child(even) td { background: var(--accent-light); }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+
+    a:hover { border-bottom-color: var(--accent); }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2em 0.6em;
+      border-radius: 12px;
+      vertical-align: middle;
+      margin-right: 0.35rem;
+    }
+
+    .part-header {
+      background: var(--accent-light);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .part-header h2 {
+      margin-top: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.25rem; }
+      pre { padding: 0.75rem; }
+      table { font-size: 0.8rem; }
+    }
+
+    @media print {
+      body { max-width: 100%; padding: 1rem; }
+      .part-header { break-before: page; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Devin CLI Blitz Demo</h1>
+  <p style="font-size:1.1rem; color: var(--accent); font-weight:600; margin-bottom:1.5rem;">angular-dashboard Edition</p>
+
+  <p class="meta"><strong>Duration:</strong> 20 minutes (self-paced video)</p>
+  <p class="meta"><strong>Demo Repository:</strong> <a href="https://github.com/codev-workshops/angular-1.x-dashboard">angular-1.x-dashboard</a> &mdash; an AngularJS 1.x widget dashboard framework with drag-and-drop, resizing, and state persistence.</p>
+  <p class="meta"><strong>What you'll learn:</strong> Devin CLI basics, AGENTS.md and Skills for customizing agent behavior, MCP server connections, and handing off work to cloud Devin.</p>
+
+  <hr>
+
+  <h2>Prerequisites</h2>
+  <ul>
+    <li>Devin CLI installed (<code>curl -fsSL https://cli.devin.ai/install.sh | bash</code>)</li>
+    <li>A Devin account (<a href="https://app.devin.ai">app.devin.ai</a>)</li>
+    <li>A cloned repo to experiment in</li>
+  </ul>
+
+  <!-- ===================== PART 1 ===================== -->
+  <div class="part-header">
+    <h2><span class="badge">Part 1</span> CLI Fundamentals <small style="font-weight:400; color:#555;">(5 min)</small></h2>
+  </div>
+
+  <h3>1.1 &mdash; Launch and explore</h3>
+
+  <pre><code>cd angular-1.x-dashboard
+devin</code></pre>
+
+  <pre><code>/help</code></pre>
+
+  <p>Ask Devin about the codebase:</p>
+
+  <pre><code>What does this project do? Give me a 3-bullet summary.</code></pre>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "Devin reads the source &mdash; <code>dashboard.js</code>, <code>WidgetModel.js</code>, <code>package.json</code> &mdash; and summarizes: it's a drag-and-drop widget dashboard framework built on AngularJS, jQuery UI Sortable, and Bootstrap, with localStorage persistence."
+  </div>
+
+  <h3>1.2 &mdash; Permission modes</h3>
+
+  <table>
+    <tr><th>Mode</th><th>Command</th><th>What it does</th></tr>
+    <tr><td><strong>Normal</strong> (default)</td><td><code>/normal</code></td><td>Asks before writes</td></tr>
+    <tr><td><strong>Accept Edits</strong></td><td><code>/accept-edits</code></td><td>Auto-approves file edits</td></tr>
+    <tr><td><strong>Bypass</strong></td><td><code>/bypass</code></td><td>Auto-approves everything</td></tr>
+  </table>
+
+  <p>Switch to Accept Edits and make a change:</p>
+
+  <pre><code>/accept-edits
+Add a one-line comment to the top of the README explaining what this repo is.</code></pre>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "Devin edits the file directly &mdash; no approval prompt. But it would still ask before running shell commands like <code>gulp build</code>."
+  </div>
+
+  <h3>1.3 &mdash; Plan mode</h3>
+
+  <pre><code>/plan
+How would you add a "locked widget" feature that prevents individual widgets from being moved or resized?</code></pre>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "Devin produces a plan referencing real files &mdash; add a <code>locked</code> property to <code>WidgetModel.js</code>, hide resize handles in <code>dashboard.html</code>, persist via <code>serialize()</code>. Plan mode is great for thinking through a feature before writing code."
+  </div>
+
+  <!-- ===================== PART 2 ===================== -->
+  <div class="part-header">
+    <h2><span class="badge">Part 2</span> AGENTS.md &amp; Skills <small style="font-weight:400; color:#555;">(7 min)</small></h2>
+  </div>
+
+  <h3>2.1 &mdash; AGENTS.md</h3>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "AGENTS.md is a 'README for agents' &mdash; an open standard that gives Devin persistent context about your repo."
+  </div>
+
+  <p>Copy this to the repo root as <code>AGENTS.md</code>:</p>
+
+  <pre><code># AGENTS.md
+
+## Project overview
+AngularJS 1.x directive library (`ui.dashboard` module) for persistent,
+draggable, resizable widget dashboards. Built with Gulp, tested with Karma + Jasmine.
+
+## Commands
+- Install: `npm install &amp;&amp; bower install`
+- Build:   `gulp`
+- Lint:    `gulp jshint` -- ALWAYS run before committing
+- Test:    `gulp test`
+
+## Code conventions
+- Source: `src/components/` (framework), `src/app/` (demo)
+- AngularJS 1.x patterns only (`.directive()`, `.factory()`) -- no ES6 classes
+- Data models extend `WidgetDataModel` via `Object.create`
+- Follow `.jshintrc`: camelCase, single quotes, strict mode, 2-space indent
+- Apache 2.0 license header on all new `.js` files
+
+## Boundaries
+- Never modify `dist/` directly -- generated by `gulp build`
+- Don't remove Apache 2.0 license headers</code></pre>
+
+  <p><strong>What makes this good:</strong></p>
+  <ol>
+    <li><strong>Commands</strong> &mdash; exact build/lint/test commands so Devin stops guessing</li>
+    <li><strong>Conventions</strong> &mdash; concrete rules ("extend via <code>Object.create</code>"), not vague ("write clean code")</li>
+    <li><strong>Boundaries</strong> &mdash; explicit "never touch X" rules</li>
+  </ol>
+
+  <p>Test it:</p>
+  <pre><code>What conventions should I follow when adding a new data model?</code></pre>
+
+  <h3>2.2 &mdash; Skills</h3>
+
+  <p>Create <code>.devin/skills/pre-pr-check/SKILL.md</code>:</p>
+
+  <pre><code>---
+name: pre-pr-check
+description: Run the pre-PR quality gate before creating or updating any pull request.
+---
+
+# Pre-PR Quality Gate
+
+Follow these steps in order. Do not skip steps.
+
+1. Run `gulp jshint` and fix any lint errors.
+2. Run `gulp test` and ensure all tests pass.
+3. Review your diff with `git diff` and check for debug statements,
+   commented-out code, and missing license headers.
+4. Summarize the results.</code></pre>
+
+  <p>Run it:</p>
+  <pre><code>/pre-pr-check</code></pre>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "Skills become slash commands. But Devin also invokes them automatically &mdash; ask 'get this branch ready for a PR' and it picks up the skill on its own."
+  </div>
+
+  <!-- ===================== PART 3 ===================== -->
+  <div class="part-header">
+    <h2><span class="badge">Part 3</span> MCP Connection <small style="font-weight:400; color:#555;">(3 min)</small></h2>
+  </div>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "MCP &mdash; Model Context Protocol &mdash; gives Devin extra tools: issue trackers, databases, documentation APIs."
+  </div>
+
+  <p>Add the DeepWiki MCP (free, no auth, public repos only):</p>
+  <pre><code>devin mcp add deepwiki https://mcp.deepwiki.com/mcp</code></pre>
+
+  <table>
+    <tr><th>Scope</th><th>Flag</th><th>Shared?</th></tr>
+    <tr><td>local (default)</td><td><code>-s local</code></td><td>No (gitignored)</td></tr>
+    <tr><td>project</td><td><code>-s project</code></td><td>Yes (committed)</td></tr>
+    <tr><td>user</td><td><code>-s user</code></td><td>No (personal)</td></tr>
+  </table>
+
+  <p>Use it:</p>
+  <pre><code>Use DeepWiki to explain the architecture of https://github.com/public-apis/public-apis</code></pre>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "Your team can connect Jira, Datadog, PagerDuty &mdash; anything with an MCP server."
+  </div>
+
+  <!-- ===================== PART 4 ===================== -->
+  <div class="part-header">
+    <h2><span class="badge">Part 4</span> Handoff to Cloud <small style="font-weight:400; color:#555;">(5 min)</small></h2>
+  </div>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "When a task outgrows your laptop, hand it off to cloud Devin."
+  </div>
+
+  <pre><code>/handoff implement the locked widget feature you planned earlier and open a PR</code></pre>
+
+  <p>The CLI packages your conversation context and git branch into a cloud session. Track it in the terminal or at <a href="https://app.devin.ai">app.devin.ai</a>.</p>
+
+  <div class="narrator">
+    <strong>Narrator:</strong> "This is the core workflow: explore locally, delegate long-running work to the cloud, review the PR when it's done."
+  </div>
+
+  <!-- ===================== QUICK REF ===================== -->
+  <hr>
+
+  <h2>Quick Reference</h2>
+
+  <table>
+    <tr><th>What</th><th>Command</th></tr>
+    <tr><td>Start session</td><td><code>devin</code></td></tr>
+    <tr><td>Help</td><td><code>/help</code></td></tr>
+    <tr><td>Accept edits mode</td><td><code>/accept-edits</code></td></tr>
+    <tr><td>Plan mode</td><td><code>/plan</code></td></tr>
+    <tr><td>Ask mode (read-only)</td><td><code>/ask</code></td></tr>
+    <tr><td>Context window</td><td><code>/context</code></td></tr>
+    <tr><td>Compact context</td><td><code>/compact</code></td></tr>
+    <tr><td>Run a skill</td><td><code>/&lt;skill-name&gt;</code></td></tr>
+    <tr><td>Add MCP server</td><td><code>devin mcp add &lt;name&gt; &lt;url&gt;</code></td></tr>
+    <tr><td>Hand off to cloud</td><td><code>/handoff &lt;task&gt;</code></td></tr>
+    <tr><td>Exit</td><td><code>/exit</code></td></tr>
+  </table>
+
+  <!-- ===================== FURTHER READING ===================== -->
+  <hr>
+
+  <h2>Further Reading</h2>
+  <ul>
+    <li><a href="https://docs.devin.ai/cli">CLI Quickstart</a></li>
+    <li><a href="https://docs.devin.ai/cli/essential-commands">Essential commands</a></li>
+    <li><a href="https://docs.devin.ai/cli/extensibility/skills/overview">Skills</a></li>
+    <li><a href="https://docs.devin.ai/cli/extensibility/mcp/configuration">MCP configuration</a></li>
+    <li><a href="https://agents.md">AGENTS.md standard</a></li>
+  </ul>
+
+</body>
+</html>
