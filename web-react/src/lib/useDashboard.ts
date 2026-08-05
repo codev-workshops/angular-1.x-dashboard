@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { defaults, merge } from 'lodash-es';
 import { DashboardState } from './models/DashboardState';
 import { WidgetDefCollection } from './models/WidgetDefCollection';
@@ -6,6 +6,8 @@ import { WidgetModel } from './models/WidgetModel';
 import type { DashboardOptions, WidgetDefinition, WidgetModelLike, WidgetRegistry, DataModelRegistry } from './models/types';
 import { createDashboardEvents, type DashboardEvents } from './events';
 import { logger } from './logger';
+
+const EMPTY_WIDGET_DEFINITIONS: readonly WidgetDefinition[] = Object.freeze([]);
 
 export type DashboardHookOptions = DashboardOptions & {
   widgetRegistry?: WidgetRegistry;
@@ -37,7 +39,7 @@ export function useDashboard(options: DashboardHookOptions, scope: Record<string
   const [version, setVersion] = useState(0);
   const [widgets, setWidgets] = useState<WidgetModel[]>([]);
   const events = useMemo(() => createDashboardEvents(), []);
-  const defsInput = options.widgetDefinitions ?? [];
+  const defsInput = options.widgetDefinitions ?? EMPTY_WIDGET_DEFINITIONS;
   const widgetDefs = useMemo(() => new WidgetDefCollection(defsInput), [defsInput]);
   const defaultWidgets = options.defaultWidgets;
   const counter = useRef(1);
@@ -57,7 +59,9 @@ export function useDashboard(options: DashboardHookOptions, scope: Record<string
     onSettingsDismiss: (reason: unknown) => logger.info('widget settings were dismissed. Reason: ', reason),
   });
 
-  const saveDashboard = (force?: boolean): unknown => {
+  const saveDashboardRef = useRef<(force?: boolean) => unknown>(() => undefined);
+  const saveDashboard = useCallback((force?: boolean): unknown => saveDashboardRef.current(force), []);
+  const saveDashboardImplementation = (force?: boolean): unknown => {
     if (!options.explicitSave) return dashboardState.save(widgetsRef.current);
     if (typeof options.unsavedChangeCount !== 'number') options.unsavedChangeCount = 0;
     if (force) {
@@ -78,6 +82,7 @@ export function useDashboard(options: DashboardHookOptions, scope: Record<string
     widgetDefs,
     options.stringifyStorage ?? true,
   ), [options.storage, options.storageId, options.storageHash, options.stringifyStorage, widgetDefs]);
+  saveDashboardRef.current = saveDashboardImplementation;
 
   const notifyChanged = (): void => setVersion((value) => value + 1);
   const getWidget = (spec: WidgetDefinition | string): WidgetModel => {

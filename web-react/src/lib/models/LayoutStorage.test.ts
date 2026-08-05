@@ -50,6 +50,11 @@ describe('Factory: LayoutStorage', () => {
     it('should allow stringify to be overridden by option', () => expect(new LayoutStorage(makeOptions({ stringifyStorage: false })).stringifyStorage).toBe(false));
     it('should create a layouts array and states object', () => { const model = new LayoutStorage(makeOptions()); expect(Array.isArray(model.layouts)).toBe(true); expect(typeof model.states).toBe('object'); });
     it('should call load', () => { const spy = vi.spyOn(LayoutStorage.prototype, 'load'); new LayoutStorage(makeOptions()); expect(spy).toHaveBeenCalled(); spy.mockRestore(); });
+    it('should reset options.unsavedChangeCount to zero', () => {
+      const opts = makeOptions({ unsavedChangeCount: 9 });
+      new LayoutStorage(opts);
+      expect(opts.unsavedChangeCount).toBe(0);
+    });
   });
   describe('the load method', () => {
     it('should use the default layouts if no stored info was found', () => { const opts = makeOptions(); expect(new LayoutStorage(opts).layouts.length).toBe(opts.defaultLayouts.length); });
@@ -61,6 +66,18 @@ describe('Factory: LayoutStorage', () => {
     it('should load defaults if the deferred is rejected', async () => { const opts = makeOptions(); opts.storage.getItem.mockReturnValue(Promise.reject('bad')); const model = new LayoutStorage(opts); await Promise.resolve(); expect(model.layouts.map((l) => l.title)).toEqual(['something', 'something', 'something']); });
     it('should load defaults if the json is malformed', async () => { const opts = makeOptions(); opts.storage.getItem.mockReturnValue(Promise.resolve('{{bad')); const model = new LayoutStorage(opts); await Promise.resolve(); expect(model.layouts.map((l) => l.title)).toEqual(['something', 'something', 'something']); });
     it('should not try to JSON.parse the result if stringifyStorage is false.', () => { const opts = makeOptions({ stringifyStorage: false }); opts.storage.getItem.mockReturnValue({ storageHash: 'ds5f9d1f', layouts: [{ title: 'title' }], states: {} }); const model = new LayoutStorage(opts); model.load(); expect(model.layouts.map((l) => l.title)).toEqual(['title']); });
+    it('should restore the states map on load', () => {
+      const opts = makeOptions();
+      opts.storage.getItem.mockReturnValue(JSON.stringify({ storageHash: 'ds5f9d1f', layouts: [{ id: 4, title: 'title', active: true, defaultWidgets: [] }], states: { 4: { widgets: ['one'] } } }));
+      const model = new LayoutStorage(opts);
+      expect(model.states).toEqual({ 4: { widgets: ['one'] } });
+    });
+    it('should load defaults for synchronously malformed JSON', () => {
+      const opts = makeOptions();
+      opts.storage.getItem.mockReturnValue('{{bad');
+      const model = new LayoutStorage(opts);
+      expect(model.layouts.map((layout) => layout.title)).toEqual(['something', 'something', 'something']);
+    });
   });
   describe('the add method', () => {
     it('should add to storage.layouts', () => { const model = new LayoutStorage(makeOptions({ defaultLayouts: [] })); const layout = { title: 'my-layout' }; model.add(layout); expect(model.layouts[0]).toBe(layout); });
@@ -96,5 +113,37 @@ describe('Factory: LayoutStorage', () => {
   describe('the removeItem', () => {
     it('should remove states[id]', () => { const model = new LayoutStorage(makeOptions()); model.setItem('1', {}); model.removeItem('1'); expect(model.states['1']).toBeUndefined(); });
     it('should call save', () => { const model = new LayoutStorage(makeOptions()); model.setItem('1', {}); const spy = vi.spyOn(model, 'save'); model.removeItem('1'); expect(spy).toHaveBeenCalled(); });
+  });
+
+  describe('private helpers', () => {
+    it('should preserve an explicit layout id', () => {
+      const model = new LayoutStorage(makeOptions({ defaultLayouts: [] }));
+      const layout: LayoutDefinition = { id: 'explicit', title: 'title' };
+      model.add(layout);
+      expect(model._getLayoutId(layout)).toBe('explicit');
+      expect(layout.dashboard?.storageId).toBe('explicit');
+    });
+    it('should choose max numeric id plus one', () => {
+      const model = new LayoutStorage(makeOptions({ defaultLayouts: [] }));
+      model.add([{ id: 2, title: 'two' }, { id: 9, title: 'nine' }]);
+      expect(model._getLayoutId({ title: 'next' })).toBe(10);
+    });
+    it('should preserve Angular NaN behavior for non-numeric ids', () => {
+      const model = new LayoutStorage(makeOptions({ defaultLayouts: [] }));
+      model.add({ id: 'not-numeric', title: 'bad' });
+      expect(Number.isNaN(model._getLayoutId({ title: 'next' }) as number)).toBe(true);
+    });
+    it('should ensure the first layout becomes active when none is active', () => {
+      const model = new LayoutStorage(makeOptions({ defaultLayouts: [{ title: 'first' }, { title: 'second' }] }));
+      model.layouts.forEach((layout) => { layout.active = false; });
+      model._ensureActiveLayout();
+      expect(model.layouts[0].active).toBe(true);
+    });
+    it('should serialize the exact layout fields', () => {
+      const model = new LayoutStorage(makeOptions({ defaultLayouts: [] }));
+      const layout: LayoutDefinition = { title: 'title', id: 3, active: true, locked: false, defaultWidgets: [{ name: 'outer' }], dashboard: { defaultWidgets: [{ name: 'inner' }] } };
+      model.layouts.push(layout);
+      expect(model._serializeLayouts()).toEqual([{ title: 'title', id: 3, active: true, locked: false, defaultWidgets: [{ name: 'inner' }] }]);
+    });
   });
 });

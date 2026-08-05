@@ -72,12 +72,12 @@ export class LayoutStorage implements StorageLike {
 
   save(): void {
     const value = { layouts: this._serializeLayouts(), states: this.states, storageHash: this.storageHash };
-    this.storage.setItem((this.id ?? '') as string, this.stringifyStorage ? JSON.stringify(value) : value);
+    this.storage.setItem(this.id as string, this.stringifyStorage ? JSON.stringify(value) : value);
     this.options.unsavedChangeCount = 0;
   }
 
   load(): void {
-    const serialized = this.storage.getItem((this.id ?? '') as string);
+    const serialized = this.storage.getItem(this.id as string);
     this.clear();
     if (serialized) {
       if (typeof serialized === 'object' && serialized !== null && 'then' in serialized && typeof serialized.then === 'function') {
@@ -100,13 +100,13 @@ export class LayoutStorage implements StorageLike {
     return this.layouts.map((layout) => ({ title: layout.title, id: layout.id, active: layout.active, locked: layout.locked, defaultWidgets: layout.dashboard?.defaultWidgets }));
   }
   _handleSyncLoad(serialized: unknown): void {
-    let value: { storageHash?: string; layouts?: LayoutDefinition[]; states?: Record<string, unknown> };
+    let value: { storageHash?: string; layouts: LayoutDefinition[]; states: Record<string, unknown> };
     if (this.stringifyStorage) {
       try { value = JSON.parse(String(serialized)) as typeof value; } catch { this._addDefaultLayouts(); return; }
     } else value = serialized as typeof value;
     if (this.storageHash !== value.storageHash) { this._addDefaultLayouts(); return; }
-    this.states = value.states ?? {};
-    this.add(value.layouts ?? []);
+    this.states = value.states;
+    this.add(value.layouts);
   }
   _handleAsyncLoad(promise: Promise<unknown>): void {
     promise.then((value) => this._handleSyncLoad(value), () => this._addDefaultLayouts());

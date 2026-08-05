@@ -57,4 +57,18 @@ describe('Factory: WidgetDefCollection', () => {
       expect(model[2].name).toBe('new-wt');
     });
   });
+
+  describe('array compatibility', () => {
+    it('should preserve native array iteration and mutation methods', () => {
+      const collection = new WidgetDefCollection(widgetDefs);
+      expect(collection.length).toBe(2);
+      expect(collection.forEach((definition) => definition.name)).toBeUndefined();
+      expect(collection.indexOf(widgetDefs[0])).toBe(0);
+      expect(collection.filter((definition) => definition.name === 'random')).toEqual([widgetDefs[0]]);
+      expect(collection.slice(0, 1)).toEqual([widgetDefs[0]]);
+      collection.push({ name: 'pushed' });
+      expect(collection[2].name).toBe('pushed');
+      expect([...collection].map((definition) => definition.name)).toEqual(['random', 'time', 'pushed']);
+    });
+  });
 });
