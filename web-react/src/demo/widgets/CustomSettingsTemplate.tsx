@@ -1,0 +1,7 @@
+import type { ChangeEvent, ReactNode } from 'react';
+
+export type CustomSettingsProps = { widget: { title?: string; partialSettingTemplateUrl?: string }; result: { title: string }; onChange: (result: { title: string }) => void; onOk: () => void; onCancel: () => void; renderPartial?: (url: string) => ReactNode };
+export function CustomSettingsTemplate({ widget, result, onChange, onOk, onCancel, renderPartial }: CustomSettingsProps): JSX.Element {
+  const change = (event: ChangeEvent<HTMLInputElement>): void => onChange({ ...result, title: event.target.value });
+  return <><div className="modal-header"><button type="button" className="close" data-dismiss="modal" aria-hidden="true" onClick={onCancel}>&times;</button><h3>Custom Settings Dialog for <small>{widget.title}</small></h3></div><div className="modal-body"><form name="form" noValidate className="form-horizontal"><div className="form-group"><label htmlFor="widgetTitle" className="col-sm-2 control-label">Title</label><div className="col-sm-10"><input type="text" className="form-control" name="widgetTitle" value={result.title} onChange={change} ng-model="result.title" /></div></div>{widget.partialSettingTemplateUrl ? renderPartial?.(widget.partialSettingTemplateUrl) : null}</form></div><div className="modal-footer"><button type="button" className="btn btn-default" onClick={onCancel}>Cancel</button><button type="button" className="btn btn-primary" onClick={onOk}>OK</button></div></>;
+}
