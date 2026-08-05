@@ -44,6 +44,35 @@ export type StorageLike = {
   removeItem: (key: string) => unknown;
 };
 
+export type WidgetDefinitionInput = WidgetDefinition | (new () => WidgetDefinition);
+
+export type LayoutDefinition = {
+  title?: string;
+  id?: string | number;
+  active?: boolean;
+  locked?: boolean;
+  defaultWidgets?: WidgetDefinition[];
+  widgetDefinitions?: WidgetDefinitionInput[];
+  dashboard?: Omit<DashboardOptions, 'storageId'> & { storageId?: string | number } & Record<string, unknown>;
+};
+
+export type LayoutStorageOptions = {
+  storageId?: string | number;
+  storage?: StorageLike;
+  storageHash?: string;
+  stringifyStorage?: boolean;
+  widgetDefinitions?: WidgetDefinitionInput[];
+  defaultLayouts?: LayoutDefinition[];
+  lockDefaultLayouts?: boolean;
+  widgetButtons?: boolean;
+  explicitSave?: boolean;
+  defaultWidgets?: WidgetDefinition[];
+  settingsModalOptions?: Record<string, unknown>;
+  onSettingsClose?: (...args: unknown[]) => void;
+  onSettingsDismiss?: (...args: unknown[]) => void;
+  unsavedChangeCount?: number;
+};
+
 export type DashboardOptions = {
   hideWidgetClose?: boolean;
   hideWidgetSettings?: boolean;
@@ -53,8 +82,31 @@ export type DashboardOptions = {
   storage?: StorageLike;
   explicitSave?: boolean;
   unsavedChangeCount?: number;
+  storageId?: string;
+  storageHash?: string;
+  stringifyStorage?: boolean;
+  defaultWidgets?: WidgetDefinition[];
+  widgetDefinitions?: WidgetDefinitionInput[];
+  defaultLayouts?: LayoutDefinition[];
+  lockDefaultLayouts?: boolean;
+  sortableOptions?: Record<string, unknown>;
+  settingsModalOptions?: Record<string, unknown>;
+  onSettingsClose?: (...args: unknown[]) => void;
+  onSettingsDismiss?: (...args: unknown[]) => void;
+  saveDashboard?: (force?: boolean) => unknown;
+  addWidget?: (spec: WidgetDefinition | string, doNotSave?: boolean) => WidgetModelLike;
+  prependWidget?: (spec: WidgetDefinition | string, doNotSave?: boolean) => WidgetModelLike;
+  removeWidget?: (widget: WidgetModelLike) => void;
+  loadWidgets?: (widgets: WidgetDefinition[]) => void;
+  clear?: (doNotSave?: boolean) => void;
+  resetWidgetsToDefault?: () => unknown;
+  openWidgetSettings?: (widget: WidgetModelLike) => void;
+  onOpenWidgetSettings?: (widget: WidgetModelLike) => void;
+  currentWidgets?: WidgetModelLike[];
   [key: string]: unknown;
 };
+
+export type WidgetModelLike = WidgetDefinition & { uid: string; serialize: () => Record<string, unknown> };
 
 export type WidgetDataModelApi = {
   updateScope: (data: unknown) => void;
