@@ -19,7 +19,7 @@ export function DynamicOptionsDemo(): JSX.Element {
     storageId: `demo_dynamic-options_${Date.now()}`,
   }));
   const dynamicWidgetInstance = useMemo(() => ({ includeUrl: style === 'peopleList' ? 'app/template/peopleList.html' : 'app/template/peopleThumbnail.html' }), [style]);
-  const registry = useMemo(() => ({ ...widgetRegistry, 'app/template/dynamicOptionsContainer.html': (props: WidgetContentProps) => <DynamicOptionsContainer widget={dynamicWidgetInstance} widgetData={props.widgetData} scope={props.scope} /> }), [dynamicWidgetInstance]);
+  const registry = useMemo(() => ({ ...widgetRegistry, 'app/template/dynamicOptionsContainer.html': (props: WidgetContentProps) => <DynamicOptionsContainer widget={dynamicWidgetInstance} widgetData={props.widgetData} scope={props.scope} /> }), [dynamicWidgetInstance]); // Angular deep-copies definitions, so inject the live includeUrl state.
   const toggleWidget = (): void => {
     const nextStyle = style === 'peopleList' ? 'peopleThumbnail' : 'peopleList';
     setStyle(nextStyle);

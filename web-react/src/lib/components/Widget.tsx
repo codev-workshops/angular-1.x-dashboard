@@ -28,7 +28,7 @@ function contentProps(widget: WidgetModel, scope: Record<string, unknown>, widge
   if (dataAttrName) {
     resolved[dataAttrName] = widgetData;
   }
-  return { ...resolved, widgetData, scope };
+  return { ...resolved, widget, widgetData, scope };
 }
 
 export function Widget({

@@ -23,6 +23,7 @@ export function DynamicDataDemo(): JSX.Element {
   }), [cartDefinitions]);
   const registry = useMemo(() => ({
     ...widgetRegistry,
+    // Angular deep-copies definitions, so inject the live cart like the inherited template scope does.
     'app/template/cartDetail.html': (props: WidgetContentProps) => { void props; return <CartDetail widget={{ cart }} widgetData={undefined} scope={{}} />; },
     'app/template/cartSummary.html': (props: WidgetContentProps) => { void props; return <CartSummary widget={{ cart }} widgetData={undefined} scope={{}} />; },
   }), [cart]);

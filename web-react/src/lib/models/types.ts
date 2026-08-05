@@ -125,6 +125,7 @@ export type WidgetDataModel = {
 export type WidgetContentProps = {
   widgetData: unknown;
   scope: Record<string, unknown>;
+  widget?: unknown;
   [prop: string]: unknown;
 };
 

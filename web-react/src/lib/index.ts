@@ -3,6 +3,15 @@ export { Dashboard, DefaultDashboard, dashboardTemplates } from './components/Da
 export type { DashboardProps, DashboardTemplateProps, DashboardTemplate } from './components/Dashboard';
 export { AltDashboard } from './components/AltDashboard';
 export { DashboardToolbar } from './components/DashboardToolbar';
+export { DashboardLayouts } from './components/DashboardLayouts';
+export { useDashboardLayouts } from './useDashboardLayouts';
+export type {
+  DashboardLayoutsProps,
+} from './components/DashboardLayouts';
+export type {
+  DashboardLayoutsOptions,
+  DashboardLayoutsApi,
+} from './useDashboardLayouts';
 export {
   useModal,
   ModalProvider,
