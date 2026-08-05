@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useContext, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import classNames from 'classnames';
 import type { DashboardOptions, DataModelRegistry, WidgetContentProps, WidgetRegistry } from '../models/types';
 import { WidgetModel } from '../models/WidgetModel';
 import { resolveWidgetContent } from '../registry';
+import { DashboardContext } from '../DashboardContext';
+import { useResizer } from '../useResizer';
 
 type WidgetProps = {
   widget: WidgetModel;
@@ -38,13 +40,16 @@ export function Widget({
   onRemove,
   onOpenSettings,
   onWidgetChanged,
-  grabResizer = () => undefined,
+  grabResizer,
 }: WidgetProps): JSX.Element {
   const [editingTitle, setEditingTitle] = useState(false);
   const [draftTitle, setDraftTitle] = useState(widget.title);
   const [widgetData, setWidgetData] = useState<unknown>();
   const [contentDisplay, setContentDisplay] = useState<string>((widget.contentStyle.display as string | undefined) ?? '');
   const resolution = useMemo(() => resolveWidgetContent(widget, registry), [registry, widget]);
+  const context = useContext(DashboardContext);
+  const resizer = useResizer({ widget, events: context?.events, onWidgetChanged });
+  const onGrabResizer = grabResizer ?? resizer.grabResizer;
 
   useEffect(() => {
     const dataModelType = widget.dataModelType;
@@ -82,9 +87,9 @@ export function Widget({
   ];
 
   return (
-    <div className="widget-container" {...{ widget: '' }} style={widget.containerStyle}>
-      <div className="widget panel panel-default">
-        <div className="widget-header panel-heading">
+    <div className="widget-container" {...{ widget: '' }} style={{ ...(widget.containerStyle as CSSProperties) }} ref={resizer.containerRef}>
+      <div className="widget panel panel-default" ref={resizer.widgetRef}>
+        <div className="widget-header panel-heading" ref={resizer.headerRef}>
           <h3 className="panel-title">
             <span
               className="widget-title"
@@ -118,10 +123,17 @@ export function Widget({
         {handles.map(({ group, regions, verticalOnly }) => verticalOnly && !widget.enableVerticalResize ? null : (
           <div className={group} key={group}>
             {regions.filter((region) => widget.enableVerticalResize || (region === 'w' || region === 'e')).map((region) => (
-              <div className={`${region}-resizer`} onMouseDown={(event) => grabResizer(event, region)} key={region} />
+              <div className={`${region}-resizer`} onMouseDown={(event) => onGrabResizer(event, region)} key={region} />
             ))}
           </div>
         ))}
+        {resizer.marquee && (
+          <div
+            ref={resizer.marqueeRef}
+            className={`widget-resizer-marquee ${resizer.marquee.region}`}
+            style={{ height: `${resizer.marquee.height}px`, width: `${resizer.marquee.width}px`, top: '-1px', left: '-1px' }}
+          />
+        )}
       </div>
     </div>
   );
