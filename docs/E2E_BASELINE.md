@@ -12,7 +12,8 @@
 - Browser: Chromium
 - Workers: 1
 - Total tests: 35
-- Result: 32 PASS, 3 expected FAIL, 0 unexpected FAIL, 0 SKIP
+- Result: 31 ordinary PASS, 4 expected FAIL, 0 unexpected FAIL, 0 SKIP
+- Playwright summary: `35 passed` because all four expected failures use `test.fail()`
 
 The same suite must run unchanged against the React application with only
 `E2E_BASE_URL` changed.
@@ -90,7 +91,7 @@ The same suite must run unchanged against the React application with only
 - PASS — removes and collapses widgets
 - PASS — prepends a widget from the demo link
 
-## Pre-existing AngularJS failures
+## 4 pre-existing AngularJS failures
 
 These are intentionally represented with `test.fail()` and are part of the
 frozen baseline:
@@ -112,3 +113,30 @@ frozen baseline:
    existing behavior as an expected failure.
 
 No unexpected test failures remained in the baseline run.
+
+## Clean-clone reproduction
+
+Reproduced from a clean clone of branch `migrate/react`:
+
+- Clone SHA: `bb2c1a094f4f44f438d4fed7e2640b44a758fe1c`
+- Scratch directory: `/tmp/angular-baseline-clean`
+- Dependency setup:
+
+  ```bash
+  npm ci --prefix harness
+  npm ci --prefix e2e-playwright
+  cd e2e-playwright
+  npx playwright install chromium
+  cd ..
+  node harness/serve-angular.js
+  cd e2e-playwright
+  npm test -- --reporter=list
+  ```
+
+- Measured setup times in the verification environment:
+  - `harness` `npm ci`: 1.08s
+  - `e2e-playwright` `npm ci`: 0.62s
+  - `npx playwright install chromium`: 0.47s (browser cache hit)
+  - Test suite: 60.1s
+- Reproduction result: 31 ordinary passes, 4 expected failures, 0 unexpected
+  failures, 0 skipped; Playwright reported `35 passed`.
