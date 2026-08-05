@@ -45,11 +45,20 @@ client-side widget framework with **no HTTP layer** — all persistence is a `St
 object (usually `window.localStorage`). Do not add dead dependencies. If you think you need
 a network call, you have misread the AngularJS source.
 
-DOM fidelity is verbatim for everything the DOM contract can observe: element nesting,
-`class` values, user-visible text, and `ng-show`-style `display: none` hiding versus
-`ng-if` removal. Angular runtime artifacts are not part of the React contract and must not
-be reproduced: `ng-*` attributes, `ng-scope`/`ng-binding`/`ng-isolate-scope` classes, the
-bare `widget` attribute, and `ui-sortable-handle`.
+The frozen suite selects on attributes that are authored in the AngularJS templates, so those
+are part of the DOM contract and must be emitted verbatim as literal, inert HTML attributes
+on the React elements. React passes unknown dash-cased attributes straight through. Known
+cases from the frozen suite include `ng-model="result.title"`,
+`ng-model="result.dataModelOptions.limit"`, `ng-model` values beginning `item.`,
+`ng-dblclick="editTitle(layout)"`, the bare `dashboard` attribute, and `data-layout`.
+
+**The rule:** copy every attribute that appears literally in the AngularJS template source
+onto the corresponding React element, in addition to wiring the real React behavior —
+except `ng-repeat` and `ng-init`, whose elements React generates structurally.
+
+Do not reproduce attributes and classes Angular adds at runtime:
+`ng-scope`, `ng-binding`, `ng-isolate-scope`, `ng-cloak`, `ng-valid*`/`ng-dirty`/`ng-pristine`,
+and `ui-sortable-handle`.
 
 ---
 
@@ -87,8 +96,27 @@ bare `widget` attribute, and `ui-sortable-handle`.
 | `$injector` lookup of a data-model by string name | the **data-model registry**: `Record<string, WidgetDataModelCtor>` |
 | `$compile(template)($scope)` inside `.widget-content` | render the registry-resolved component as a React child of `.widget-content` |
 
-The JSX must preserve the observable DOM structure and behavior described above, but must
-not cargo-cult Angular's runtime-generated attributes or classes.
+The JSX must preserve the observable DOM structure and behavior described above.
+
+### Frozen-contract checklist
+
+Every later wave must preserve these contract facts:
+
+- The frozen suite selects `ng-model="result.title"`,
+  `ng-model="result.dataModelOptions.limit"`, `ng-model` values beginning `item.`,
+  `ng-dblclick="editTitle(layout)"`, the bare `dashboard` attribute, and `data-layout`.
+- Required localStorage keys are `demo_simple`, `explicitSave`, and `demo_resize`.
+  `demo_simple` stores `{widgets:[...]}` without a top-level `hash`; `explicitSave`
+  defers writes until explicit save; `demo_resize` stores a payload containing `widgets`.
+- Route navigation uses `page.goto('/#' + route)`, so HashRouter paths must match exactly.
+- The suite uses `waitUntil: 'networkidle'`; routes must settle without pending network
+  activity.
+- `clearStorageBeforeBoot` clears localStorage once per browser context using a
+  sessionStorage marker.
+- Layouts must preserve the `.layout-tabs` sibling structure and exactly one active dashboard.
+- `.widget-header` must be draggable for sortable behavior.
+- `.e-resizer` and `.w-resizer` must have usable bounding boxes.
+- `.widget-resizer-marquee` must appear during a resize drag and disappear after mouseup.
 
 ---
 
