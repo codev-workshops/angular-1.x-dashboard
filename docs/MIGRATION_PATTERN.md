@@ -45,6 +45,12 @@ client-side widget framework with **no HTTP layer** — all persistence is a `St
 object (usually `window.localStorage`). Do not add dead dependencies. If you think you need
 a network call, you have misread the AngularJS source.
 
+DOM fidelity is verbatim for everything the DOM contract can observe: element nesting,
+`class` values, user-visible text, and `ng-show`-style `display: none` hiding versus
+`ng-if` removal. Angular runtime artifacts are not part of the React contract and must not
+be reproduced: `ng-*` attributes, `ng-scope`/`ng-binding`/`ng-isolate-scope` classes, the
+bare `widget` attribute, and `ui-sortable-handle`.
+
 ---
 
 ## 2. Translation table
@@ -80,6 +86,9 @@ a network call, you have misread the AngularJS source.
 | `angular.isArray/isObject/isFunction/isNumber/isDefined` | plain TS type guards |
 | `$injector` lookup of a data-model by string name | the **data-model registry**: `Record<string, WidgetDataModelCtor>` |
 | `$compile(template)($scope)` inside `.widget-content` | render the registry-resolved component as a React child of `.widget-content` |
+
+The JSX must preserve the observable DOM structure and behavior described above, but must
+not cargo-cult Angular's runtime-generated attributes or classes.
 
 ---
 
@@ -224,8 +233,11 @@ These are framework-free classes; port them 1:1 and keep the method names.
   `getActiveLayout`, `_addDefaultLayouts`, `_serializeLayouts`, `_ensureActiveLayout`,
   `_getLayoutId` (max numeric id + 1) with identical behaviour, including `lockDefaultLayouts`.
 - **`WidgetDataModel`** — base class with `setup(widget, api)`, `init()`, `updateScope(data)`,
-  `destroy()`. `updateScope` no longer touches a scope: it calls the subscriber the `<Widget>`
-  installed, which sets React state and re-renders the content with the new `widgetData`.
+  `destroy()`. The subscriber contract is explicitly
+  `WidgetDataModelApi = { updateScope(data: unknown): void }`. `<Widget>` constructs the
+  model, calls `setup(widget, api)` followed by `init()`, and calls `destroy()` on unmount.
+  `updateScope` no longer touches a scope: it calls the subscriber `<Widget>` installed,
+  which sets React state and re-renders the content with the new `widgetData`.
   Subclasses (`RandomDataModel`, `CartDataModel`) keep their public methods
   (`updateLimit`, `addItem`, `removeItem`, `processItems`, …).
 
@@ -278,3 +290,14 @@ and the orchestrator applies it before merging.
 - Branch off and target the integration branch **`migrate/react`**.
 - Temporary harness routes for visual verification go under `#/__harness/<yourname>` and are
   deleted by the final wave.
+
+## 9. Reference implementation
+
+The worked reference implementation is:
+
+- `web-react/src/lib/components/Widget.tsx`
+- `web-react/src/lib/models/WidgetModel.ts`
+- `web-react/src/lib/registry.ts`
+- Their adjacent Vitest tests
+
+The temporary visual verification route is `#/__harness/reference`.
