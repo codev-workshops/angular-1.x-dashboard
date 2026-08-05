@@ -6,6 +6,7 @@ import { DashboardToolbar } from './DashboardToolbar';
 import { WidgetModel } from '../models/WidgetModel';
 import { resolveWidgetContent } from '../registry';
 import type { WidgetContentProps } from '../models/types';
+import { ModalProvider, useWidgetSettings } from '../useModal';
 
 function contentProps(widget: WidgetModel, scope: Record<string, unknown>, widgetData: unknown): WidgetContentProps {
   const attrs = widget.attrs ?? {};
@@ -71,17 +72,27 @@ function AltWidget({ widget, options, scope, registry, dataModelRegistry, onRemo
   );
 }
 
-export function AltDashboard({ options, scope = {}, registry, dataModelRegistry = {} }: DashboardTemplateProps): JSX.Element {
+function AltDashboardContent({ options, scope = {}, registry, dataModelRegistry = {} }: DashboardTemplateProps): JSX.Element {
   const dashboard = useDashboard(options, scope);
+  const openWidgetSettings = useWidgetSettings({ options, scope, events: dashboard.events });
+  const handleOpenSettings = options.onOpenWidgetSettings ? dashboard.openWidgetSettings : openWidgetSettings;
   const contextDashboard: Record<string, unknown> = { ...dashboard };
   return (
     <DashboardContext.Provider value={{ options, events: dashboard.events, widgetRegistry: registry, dataModelRegistry, dashboard: contextDashboard }}>
       <div>
         {!options.hideToolbar && <div className="btn-toolbar"><DashboardToolbar options={options} variant="alt" /></div>}
         <div className="dashboard-widget-area">
-          {dashboard.widgets.map((widget) => <AltWidget key={widget.uid} widget={widget} options={options} scope={scope} registry={registry} dataModelRegistry={dataModelRegistry} onRemove={dashboard.removeWidget} onOpenSettings={dashboard.openWidgetSettings} onWidgetChanged={(changed) => dashboard.events.emit('widgetChanged', changed)} />)}
-        </div>
+              {dashboard.widgets.map((widget) => <AltWidget key={widget.uid} widget={widget} options={options} scope={scope} registry={registry} dataModelRegistry={dataModelRegistry} onRemove={dashboard.removeWidget} onOpenSettings={handleOpenSettings} onWidgetChanged={(changed) => dashboard.events.emit('widgetChanged', changed)} />)}
+          </div>
       </div>
     </DashboardContext.Provider>
+  );
+}
+
+export function AltDashboard(props: DashboardTemplateProps): JSX.Element {
+  return (
+    <ModalProvider registry={props.modalRegistry} partials={props.modalPartials}>
+      <AltDashboardContent {...props} />
+    </ModalProvider>
   );
 }

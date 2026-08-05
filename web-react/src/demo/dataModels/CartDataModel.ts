@@ -1,3 +1,5 @@
+import { WidgetDataModel } from '../../lib/models/WidgetDataModel';
+
 export type CartItem = {
   name: string;
   qty: number;
@@ -7,7 +9,7 @@ export type CartItem = {
 
 export type CartListener = () => void;
 
-export class CartDataModel {
+export class CartDataModel extends WidgetDataModel {
   items: CartItem[] = [];
   total = 0;
   qty = 0;

@@ -82,7 +82,7 @@ export function Widget({
   ];
 
   return (
-    <div className="widget-container" style={widget.containerStyle}>
+    <div className="widget-container" {...{ widget: '' }} style={widget.containerStyle}>
       <div className="widget panel panel-default">
         <div className="widget-header panel-heading">
           <h3 className="panel-title">

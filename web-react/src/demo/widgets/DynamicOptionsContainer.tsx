@@ -6,7 +6,8 @@ import { PeopleThumbnail } from './PeopleThumbnail';
 
 type DynamicWidget = WidgetDefinition & { includeUrl: string };
 
-export function DynamicOptionsContainer({ widget: suppliedWidget }: WidgetContentProps & { widget: DynamicWidget }): JSX.Element {
+export function DynamicOptionsContainer({ widget }: WidgetContentProps): JSX.Element {
+  const suppliedWidget = widget as DynamicWidget;
   const [people, setPeople] = useState<Person[]>(generatePeople);
   const [includeUrl, setIncludeUrl] = useState(suppliedWidget.includeUrl);
   const toggleTemplate = (): void => {
