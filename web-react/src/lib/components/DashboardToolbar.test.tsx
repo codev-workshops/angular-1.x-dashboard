@@ -1,6 +1,6 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 afterEach(cleanup);
 import { Dashboard } from './Dashboard';
 import type { DashboardOptions, WidgetDefinition } from '../models/types';
@@ -42,13 +42,32 @@ describe('DashboardToolbar', () => {
 
   it('renders explicit-save states', async () => {
     const user = userEvent.setup();
-    const storage = { getItem: () => null, setItem: () => undefined, removeItem: () => undefined };
+    const setItem = vi.fn();
+    const storage = { getItem: () => null, setItem, removeItem: () => undefined };
     renderDashboard({ storage, storageId: 'test', explicitSave: true });
     await waitFor(() => expect(document.querySelector('.btn-success')).toBeInTheDocument());
     const save = document.querySelector('.btn-success') as HTMLButtonElement;
+    expect(save).toHaveTextContent('all saved');
     expect(save).toBeDisabled();
+    expect(setItem).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: /Button dropdown/ }));
     await user.click(screen.getByRole('link', { name: 'one' }));
     expect(document.querySelector('.btn-success')).toHaveTextContent('save changes (1)');
+    expect(document.querySelector('.btn-success')).toBeEnabled();
+    expect(setItem).not.toHaveBeenCalled();
+    await user.click(document.querySelector('.btn-success') as HTMLButtonElement);
+    expect(document.querySelector('.btn-success')).toHaveTextContent('all saved');
+    expect(document.querySelector('.btn-success')).toBeDisabled();
+    expect(setItem).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses buttons instead of a dropdown when widgetButtons is enabled', async () => {
+    const user = userEvent.setup();
+    renderDashboard({ widgetButtons: true });
+    await waitFor(() => expect(document.querySelector('.widget-container')).toBeInTheDocument());
+    expect(document.querySelector('.dropdown')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Button dropdown/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'two' }));
+    expect(document.querySelectorAll('.widget-container')).toHaveLength(2);
   });
 });

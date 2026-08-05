@@ -86,7 +86,7 @@ export function DashboardToolbar({ options, variant = 'default' }: DashboardTool
         <button
           onClick={() => options.saveDashboard?.()}
           className="btn btn-success"
-          style={{ display: unsaved ? undefined : 'none' }}
+          {...(unsaved ? {} : { style: { display: 'none' } })}
         >{unsaved ? 'Save' : 'Alternative - No Changes'}</button>
       )}
       <button

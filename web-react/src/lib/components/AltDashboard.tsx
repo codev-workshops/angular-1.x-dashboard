@@ -53,7 +53,7 @@ function AltWidget({ widget, options, scope, registry, dataModelRegistry, onRemo
           <h3 className="panel-title">
             <span className="widget-title" onDoubleClick={() => { setDraftTitle(widget.title); setEditingTitle(true); }} style={{ display: editingTitle ? 'none' : undefined }}>{widget.title}</span>
             <form action="" className="widget-title" onSubmit={(event) => { event.preventDefault(); saveTitle(); }} style={{ display: editingTitle ? undefined : 'none' }}>
-              <input type="text" value={draftTitle} onChange={(event) => setDraftTitle(event.target.value)} onBlur={saveTitle} className="form-control" autoFocus={editingTitle} />
+              <input type="text" value={draftTitle} onChange={(event) => { widget.title = event.target.value; setDraftTitle(event.target.value); }} onBlur={saveTitle} className="form-control" autoFocus={editingTitle} />
             </form>
             {!options.hideWidgetName && <span className="label label-primary">{widget.name}</span>}
             {!options.hideWidgetClose && <span onClick={() => onRemove(widget)} className="glyphicon glyphicon-remove" />}
