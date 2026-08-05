@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
 import type { WidgetModelLike } from '../../lib/models/types';
 import { createDashboardEvents } from '../../lib/events';
@@ -23,7 +24,8 @@ const fakeWidget = (withPartial = false): WidgetModelLike => ({
 });
 
 function ConfigurablePartial({ result, updateResult }: WidgetSettingsPartialProps): JSX.Element {
-  const limit = typeof result.dataModelOptions?.limit === 'number' ? result.dataModelOptions.limit : '';
+  const rawLimit = result.dataModelOptions?.limit;
+  const limit = typeof rawLimit === 'string' || typeof rawLimit === 'number' ? rawLimit : '';
   return (
     <div className="form-group">
       <label className="col-sm-2 control-label">Random Limit</label>
@@ -45,6 +47,10 @@ function ConfigurablePartial({ result, updateResult }: WidgetSettingsPartialProp
 
 function OverrideModal({ close, dismiss, resolve }: ModalContentProps): JSX.Element {
   const widget = resolve.widget as WidgetModelLike;
+  const [result, setResult] = useState(() => cloneDeep(widget));
+  const updateTitle = (title: string): void => {
+    setResult((draft) => ({ ...draft, title }));
+  };
   return (
     <>
       <div className="modal-header">
@@ -57,18 +63,23 @@ function OverrideModal({ close, dismiss, resolve }: ModalContentProps): JSX.Elem
           <div className="form-group">
             <label htmlFor="widgetTitle" className="col-sm-2 control-label">Title</label>
             <div className="col-sm-10">
-              <input type="text" className="form-control" name="widgetTitle" ng-model="result.title" defaultValue={widget.title} />
+              <input type="text" className="form-control" name="widgetTitle" ng-model="result.title" value={result.title ?? ''} onChange={(event) => updateTitle(event.target.value)} />
             </div>
           </div>
         </form>
       </div>
       <div className="modal-footer">
         <button type="button" className="btn btn-default" ng-click="cancel()" onClick={() => dismiss('cancel')}>fuhget about it</button>
-        <button type="button" className="btn btn-primary" ng-click="ok()" onClick={() => close()}>hell yea</button>
+        <button type="button" className="btn btn-primary" ng-click="ok()" onClick={() => close(result)}>hell yea</button>
       </div>
     </>
   );
 }
+
+const modalRegistry: ModalRegistry = {
+  'app/template/widgetSpecificSettings.html': OverrideModal,
+};
+const modalPartials: WidgetSettingsPartialRegistry = { [partialUrl]: ConfigurablePartial };
 
 function ModalHarnessContent(): JSX.Element {
   const { open } = useModal();
@@ -138,12 +149,8 @@ function ModalHarnessContent(): JSX.Element {
 }
 
 export function ModalHarness(): JSX.Element {
-  const registry: ModalRegistry = {
-    'app/template/widgetSpecificSettings.html': OverrideModal,
-  };
-  const partials: WidgetSettingsPartialRegistry = { [partialUrl]: ConfigurablePartial };
   return (
-    <ModalProvider registry={registry} partials={partials}>
+    <ModalProvider registry={modalRegistry} partials={modalPartials}>
       <ModalHarnessContent />
     </ModalProvider>
   );

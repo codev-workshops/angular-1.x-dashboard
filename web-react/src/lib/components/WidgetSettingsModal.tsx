@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash-es';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { WidgetDefinition, WidgetModelLike } from '../models/types';
-import type { ModalContentProps, WidgetSettingsPartialRegistry } from '../useModal';
+import type { ModalContentProps } from '../useModal';
 
 export type WidgetSettingsPartialProps = {
   widget: WidgetModelLike;
@@ -22,10 +22,9 @@ export function WidgetSettingsModal({
   close,
   dismiss,
   partials = {},
-}: ModalContentProps & { partials?: WidgetSettingsPartialRegistry }): JSX.Element {
+}: ModalContentProps): JSX.Element {
   const widget = widgetFromResolve(resolve);
   const [result, setResult] = useState<WidgetDefinition>(() => cloneDeep(widget));
-  const titleInput = useRef<HTMLInputElement>(null);
   const partialUrl = typeof widget.settingsModalOptions?.partialTemplateUrl === 'string'
     ? widget.settingsModalOptions.partialTemplateUrl
     : undefined;
@@ -37,10 +36,6 @@ export function WidgetSettingsModal({
       return next;
     });
   };
-  useEffect(() => {
-    if (titleInput.current) titleInput.current.value = result.title ?? '';
-  }, [result.title]);
-
   return (
     <>
       <div className="modal-header">
@@ -57,7 +52,7 @@ export function WidgetSettingsModal({
                 className="form-control"
                 name="widgetTitle"
                 ng-model="result.title"
-                ref={titleInput}
+                value={result.title ?? ''}
                 onChange={(event) => updateResult((draft) => { draft.title = event.target.value; })}
               />
             </div>

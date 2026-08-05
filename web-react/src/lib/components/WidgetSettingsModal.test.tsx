@@ -44,4 +44,11 @@ describe('WidgetSettingsModal', () => {
     fireEvent.click(screen.getByText('Cancel'));
     expect(dismiss).toHaveBeenCalledWith('cancel');
   });
+
+  it('dismisses with cancel from the close button', () => {
+    const dismiss = vi.fn();
+    render(<WidgetSettingsModal resolve={{ widget: widget() }} scope={{}} close={vi.fn()} dismiss={dismiss} />);
+    fireEvent.click(document.querySelector('button.close')!);
+    expect(dismiss).toHaveBeenCalledWith('cancel');
+  });
 });
