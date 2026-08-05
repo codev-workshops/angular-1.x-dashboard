@@ -109,8 +109,9 @@ frozen baseline:
    modal.
 3. **Resize ratio height** — this is a layout artifact, not an application bug.
    In a 1280×720 viewport, the ratio widget's `.e-resizer` is at approximately
-   y=1083, below the fold, so the frozen synthetic drag never reaches the
-   handle. When the widget is scrolled into view, AngularJS resizes it from
+   y=1083.5, below the fold by 363.5px, so the frozen synthetic drag never
+   reaches the handle. The React and AngularJS measurements are both y=1083.5
+   at this viewport. When the widget is scrolled into view, AngularJS resizes it from
    50% to 56.09% and its content height from 160px to 179.5px, which is the
    expected `contentWidth * 0.25` behavior. This expected failure is therefore
    contingent on the React `/resize` page reproducing the AngularJS widget

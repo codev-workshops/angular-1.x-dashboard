@@ -92,9 +92,10 @@ still fail:
    `template/SaveChangesModal.html`, so switching layouts with unsaved changes renders no
    confirmation modal.
 3. **Resize ratio height.** The React `/resize` page reproduces the AngularJS widget order,
-   widget sizes and overall page height, so the ratio widget's `.e-resizer` stays below the
-   720px fold of the frozen 1280×720 viewport and the synthetic drag never reaches it. The
-   expected failure is preserved for the same layout reason as in AngularJS, not by special-casing.
+   widget sizes and overall page height: at 1280×720, the ratio widget's `.e-resizer` is at
+   y=1083.5, leaving a 363.5px margin below the 720px fold in both applications. The
+   synthetic drag therefore never reaches it. The expected failure is preserved for the same
+   layout reason as in AngularJS, not by special-casing.
 
 ## AngularJS re-run output
 
