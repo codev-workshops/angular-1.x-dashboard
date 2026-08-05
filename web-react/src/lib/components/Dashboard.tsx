@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { useRef, type ComponentType } from 'react';
 import { DashboardContext } from '../DashboardContext';
 import { useDashboard } from '../useDashboard';
 import type { DashboardOptions, DataModelRegistry, WidgetRegistry } from '../models/types';
@@ -7,6 +7,7 @@ import { DashboardToolbar } from './DashboardToolbar';
 import { AltDashboard } from './AltDashboard';
 import { logger } from '../logger';
 import { ModalProvider, useWidgetSettings, type ModalRegistry, type WidgetSettingsPartialRegistry } from '../useModal';
+import { useSortable, type SortableOptions } from '../useSortable';
 
 export type DashboardTemplateProps = {
   options: DashboardOptions;
@@ -25,14 +26,26 @@ export type DashboardProps = DashboardTemplateProps & {
 
 function DefaultDashboardContent({ options, scope = {}, registry, dataModelRegistry = {} }: DashboardTemplateProps): JSX.Element {
   const dashboard = useDashboard(options, scope);
+  const areaRef = useRef<HTMLDivElement>(null);
   const openWidgetSettings = useWidgetSettings({ options, scope, events: dashboard.events });
   const handleOpenSettings = options.onOpenWidgetSettings ? dashboard.openWidgetSettings : openWidgetSettings;
+  useSortable({
+    containerRef: areaRef,
+    items: dashboard.widgets,
+    itemSelector: '.widget-container',
+    options: dashboard.sortableOptions as SortableOptions,
+    onReorder: (from, to) => {
+      const [widget] = dashboard.widgets.splice(from, 1);
+      dashboard.widgets.splice(to, 0, widget);
+      dashboard.notifyChanged();
+    },
+  });
   const contextDashboard: Record<string, unknown> = { ...dashboard };
   return (
     <DashboardContext.Provider value={{ options, events: dashboard.events, widgetRegistry: registry, dataModelRegistry, dashboard: contextDashboard }}>
       <div>
         {!options.hideToolbar && <div className="btn-toolbar"><DashboardToolbar options={options} /></div>}
-        <div className="dashboard-widget-area" ui-sortable="sortableOptions" ng-model="widgets">
+        <div ref={areaRef} className="dashboard-widget-area" ui-sortable="sortableOptions" ng-model="widgets">
           {dashboard.widgets.map((widget) => (
             <Widget
               key={widget.uid}
