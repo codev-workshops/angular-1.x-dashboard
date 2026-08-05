@@ -107,10 +107,17 @@ frozen baseline:
    `src/components/directives/dashboardLayouts/SaveChangesModal.html`. Switching
    layouts with unsaved changes consequently does not render the confirmation
    modal.
-3. **Resize ratio height** — the resize demo includes a widget with
-   `heightToWidthRatio`, but an east-edge width drag does not change its
-   rendered content height in the AngularJS app. The contract records this
-   existing behavior as an expected failure.
+3. **Resize ratio height** — this is a layout artifact, not an application bug.
+   In a 1280×720 viewport, the ratio widget's `.e-resizer` is at approximately
+   y=1083, below the fold, so the frozen synthetic drag never reaches the
+   handle. When the widget is scrolled into view, AngularJS resizes it from
+   50% to 56.09% and its content height from 160px to 179.5px, which is the
+   expected `contentWidth * 0.25` behavior. This expected failure is therefore
+   contingent on the React `/resize` page reproducing the AngularJS widget
+   order, widget sizes, and overall page height. If React makes the page
+   shorter and brings the handle above the 720px fold, the drag will succeed,
+   the `test.fail()` will become an unexpected pass, and the frozen run will
+   be red.
 
 No unexpected test failures remained in the baseline run.
 

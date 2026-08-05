@@ -3,6 +3,8 @@ import { DashboardHarness } from './demo/harness/DashboardHarness';
 import { FoundationHarness } from './demo/harness/FoundationHarness';
 import { ModalHarness } from './demo/harness/ModalHarness';
 import { ReferenceHarness } from './demo/harness/ReferenceHarness';
+import { ResizeHarness } from './demo/harness/ResizeHarness';
+import { SortableHarness } from './demo/harness/SortableHarness';
 import { WidgetLibraryHarness } from './demo/harness/WidgetLibraryHarness';
 
 export function App(): JSX.Element {
@@ -14,6 +16,8 @@ export function App(): JSX.Element {
       <Route path="/__harness/dashboard" element={<DashboardHarness />} />
       <Route path="/__harness/modals" element={<ModalHarness />} />
       <Route path="/__harness/widgets" element={<WidgetLibraryHarness />} />
+      <Route path="/__harness/resize" element={<ResizeHarness />} />
+      <Route path="/__harness/sortable" element={<SortableHarness />} />
       <Route path="/__harness/*" element={<div />} />
       <Route path="*" element={<div />} />
     </Routes>
