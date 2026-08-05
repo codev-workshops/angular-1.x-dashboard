@@ -5,3 +5,5 @@ bower_components/
 dist/
 /demo/
 /coverage
+e2e-playwright/playwright-report/
+e2e-playwright/test-results/

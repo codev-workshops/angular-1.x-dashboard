@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" ng-app="app">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <base href="/src/">
+  <title>Malhar Angular Dashboard</title>
+  <link rel="stylesheet" href="/harness/vendor/bootstrap.css">
+  <link rel="stylesheet" href="/harness/vendor/jquery-ui.css">
+  <link rel="stylesheet" href="/dist/malhar-angular-dashboard.css">
+  <style>
+    body { padding-top: 50px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation" ng-controller="NavBarCtrl">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#/">angular-dashboard</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li ng-repeat="(when, route) in $route.routes" ng-class="{active: $route.current.$$route === route}">
+          <a ng-href="{{'#' + route.originalPath}}">{{route.title}}</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <div ng-controller="NavBarCtrl">
+    <div ng-if="$route.current.$$route.description" class="alert alert-success" btf-markdown="'**Description:** ' + $route.current.$$route.description"></div>
+  </div>
+  <div ng-view></div>
+
+  <script src="/harness/vendor/jquery.js"></script>
+  <script src="/harness/vendor/jquery-ui.js"></script>
+  <script src="/harness/vendor/angular.js"></script>
+  <script src="/harness/vendor/angular-sanitize.js"></script>
+  <script src="/harness/vendor/angular-route.js"></script>
+  <script src="/harness/vendor/lodash.js"></script>
+  <script src="/harness/vendor/bootstrap.js"></script>
+  <script src="/harness/vendor/showdown.js"></script>
+  <script src="/harness/vendor/showdown-global.js"></script>
+  <script src="/harness/vendor/markdown.js"></script>
+  <script src="/harness/vendor/ui-bootstrap-tpls.js"></script>
+  <script src="/harness/vendor/sortable.js"></script>
+
+  <script src="/src/components/directives/dashboard/dashboard.js"></script>
+  <script src="/src/components/models/DashboardState.js"></script>
+  <script src="/src/components/models/LayoutStorage.js"></script>
+  <script src="/src/components/models/WidgetDataModel.js"></script>
+  <script src="/src/components/models/WidgetDefCollection.js"></script>
+  <script src="/src/components/models/WidgetModel.js"></script>
+  <script src="/src/components/directives/dashboard/WidgetSettingsCtrl.js"></script>
+  <script src="/src/components/directives/dashboardLayouts/SaveChangesModalCtrl.js"></script>
+  <script src="/src/components/directives/dashboardLayouts/dashboardLayouts.js"></script>
+  <script src="/src/components/directives/widget/DashboardWidgetCtrl.js"></script>
+  <script src="/src/components/directives/widget/widget.js"></script>
+
+  <script src="/src/app/index.js"></script>
+  <script src="/src/app/demo.js"></script>
+  <script src="/src/app/cartDataModel.js"></script>
+  <script src="/src/app/customWidgetSettings.js"></script>
+  <script src="/src/app/dataModel.js"></script>
+  <script src="/src/app/directives.js"></script>
+  <script src="/src/app/dynamicData.js"></script>
+  <script src="/src/app/dynamicOptions.js"></script>
+  <script src="/src/app/explicitSave.js"></script>
+  <script src="/src/app/layouts.js"></script>
+  <script src="/src/app/resize.js"></script>
+</body>
+</html>
