@@ -1,0 +1,66 @@
+<!doctype html>
+<html class="no-js">
+<head>
+  <meta charset="utf-8">
+  <title>Malhar Angular Dashboard</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="/dist/malhar-angular-dashboard.css">
+  <style>
+    body { margin: 15px; padding-top: 50px; }
+    a { cursor: pointer; }
+    .layout-tabs { margin-bottom: 10px; }
+    .demo-widget-fluid { border: 1px solid blue; height: 100%; }
+    .demo-widget-fluid > div { border: 1px solid red; position: relative; top: 50%; transform: translateY(-50%); }
+    .widget-container { min-height: 110px; }
+  </style>
+</head>
+<body ng-app="app">
+  <nav class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation" ng-controller="NavBarCtrl">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">angular-dashboard</a>
+      </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li ng-repeat="(when, route) in $route.routes" ng-class="{ 'active': $route.current.$$route === route}">
+            <a ng-href="{{'#' + route.originalPath}}">{{ route.title }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div ng-controller="NavBarCtrl">
+    <div ng-if="$route.current.$$route.description" class="alert alert-success" role="alert"
+      btf-markdown="'**Description:** ' + $route.current.$$route.description"></div>
+  </div>
+  <div ng-view=""></div>
+
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/bower_components/jquery-ui/jquery-ui.js"></script>
+  <script src="/bower_components/angular/angular.js"></script>
+  <script src="/bower_components/angular-route/angular-route.js"></script>
+  <script src="/bower_components/angular-sanitize/angular-sanitize.js"></script>
+  <script src="/bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <script src="/bower_components/angular-ui-sortable/sortable.js"></script>
+  <script src="/bower_components/lodash/lodash.js"></script>
+  <script src="/bower_components/showdown/src/showdown.js"></script>
+  <script src="/bower_components/angular-markdown-directive/markdown.js"></script>
+  <script src="/dist/malhar-angular-dashboard.js"></script>
+  <script src="/app/index.js"></script>
+  <script src="/app/demo.js"></script>
+  <script src="/app/dataModel.js"></script>
+  <script src="/app/cartDataModel.js"></script>
+  <script src="/app/directives.js"></script>
+  <script src="/app/customWidgetSettings.js"></script>
+  <script src="/app/dynamicData.js"></script>
+  <script src="/app/dynamicOptions.js"></script>
+  <script src="/app/explicitSave.js"></script>
+  <script src="/app/layouts.js"></script>
+  <script src="/app/resize.js"></script>
+</body>
+</html>
