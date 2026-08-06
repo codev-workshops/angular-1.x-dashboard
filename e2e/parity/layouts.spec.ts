@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearDemoStorage, openRoute, storageValue } from './helpers';
+import { clearDemoStorage, openRoute, storageValue, widgets } from './helpers';
 
 function tabs(page: import('@playwright/test').Page) {
   return page.locator('.nav.nav-tabs.layout-tabs > li');
@@ -19,10 +19,14 @@ test('three default layout tabs render with Layout 1 active', async ({ page }) =
 });
 
 test('switching tabs swaps the active dashboard', async ({ page }) => {
-  const first = await page.locator('.dashboard-widget-area').first().locator('.widget-title').allTextContents();
+  await widgets(page).first().locator('.buttons .glyphicon-remove').click();
+  await expect(widgets(page)).toHaveCount(4);
   await tabs(page).nth(1).click();
   await expect(tabs(page).nth(1)).toHaveClass(/active/);
-  await expect.poll(() => page.locator('.dashboard-widget-area').first().locator('.widget-title').allTextContents()).toEqual(first);
+  await expect(widgets(page)).toHaveCount(5);
+  await tabs(page).nth(0).click();
+  await expect(tabs(page).nth(0)).toHaveClass(/active/);
+  await expect(widgets(page)).toHaveCount(4);
 });
 
 test('plus creates a Custom layout and activates it', async ({ page }) => {
@@ -42,6 +46,8 @@ test('a custom layout can be renamed and rejects blank title', async ({ page }) 
   await input.fill('Renamed Layout');
   await input.press('Enter');
   await expect(custom).toContainText('Renamed Layout');
+  await page.reload();
+  await expect(tabs(page).nth(3)).toContainText('Renamed Layout');
 });
 
 test('a removable custom layout is removed and previous layout activates', async ({ page }) => {
@@ -65,5 +71,7 @@ test('layout state and active tab persist across reload', async ({ page }) => {
   await page.reload();
   await expect(page.locator('.layout-tabs')).toContainText('Custom');
   await expect(tabs(page).nth(3)).toHaveClass(/active/);
-  await expect(storageValue(page, 'demo-layouts')).not.toBeNull();
+  const saved = JSON.parse((await storageValue(page, 'demo-layouts'))!);
+  expect(saved.storageHash).toBe('fs4df4d51');
+  expect(saved.layouts.map((layout: { title: string }) => layout.title)).toContain('Custom');
 });

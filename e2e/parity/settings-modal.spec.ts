@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   await openRoute(page, '/custom-settings');
 });
 
-test('default settings modal edits Title and persists on OK', async ({ page }) => {
+test('widget-level onSettingsClose ignores Title changes on OK', async ({ page }) => {
   const widget = widgets(page).first();
   await widget.locator('.buttons .glyphicon-cog').click();
   const modal = page.locator('.modal');
@@ -14,10 +14,30 @@ test('default settings modal edits Title and persists on OK', async ({ page }) =
   await modal.locator('.modal-body input').first().fill('Configured Title');
   await modal.getByRole('button', { name: 'OK' }).click();
   await expect(modal).toHaveCount(0);
+  // The configurable widget definition supplies its own onSettingsClose and
+  // only updates its limit; it overrides the dashboard-level title copier.
   await expect(widget.locator('span.widget-title')).toHaveText('Widget 1');
   await page.reload();
   await expect(widgets(page).first().locator('span.widget-title')).toHaveText('Widget 1');
-  await expect(storageValue(page, 'custom-settings')).not.toBeNull();
+  const saved = JSON.parse((await storageValue(page, 'custom-settings'))!);
+  expect(saved.widgets.map((item: { name: string }) => item.name)).toEqual([
+    'congfigurable widget',
+    'override modal widget',
+  ]);
+});
+
+test('dashboard-level onSettingsClose applies a title and persists it', async ({ page }) => {
+  await openRoute(page, '/');
+  const widget = widgets(page).first();
+  await widget.locator('.buttons .glyphicon-cog').click();
+  const modal = page.locator('.modal');
+  await modal.locator('.modal-body input').first().fill('Configured Title');
+  await modal.getByRole('button', { name: 'OK' }).click();
+  await expect(widget.locator('span.widget-title')).toHaveText('Configured Title');
+  await page.reload();
+  await expect(widgets(page).first().locator('span.widget-title')).toHaveText('Configured Title');
+  const saved = JSON.parse((await storageValue(page, 'demo_simple'))!);
+  expect(saved.widgets[0]).toMatchObject({ name: 'random', title: 'Configured Title' });
 });
 
 test('Cancel and close discard modal edits', async ({ page }) => {

@@ -15,23 +15,33 @@ async function makeUnsavedChange(page: import('@playwright/test').Page) {
   await expect(page.locator('.btn-toolbar button.btn-success')).toHaveText('save changes (1)');
 }
 
-test('switching with unsaved changes switches without opening a modal', async ({ page }) => {
+async function switchWithModal(page: import('@playwright/test').Page) {
   await makeUnsavedChange(page);
   await tabs(page).nth(1).click();
-  await expect(tabs(page).nth(1)).toHaveClass(/active/);
-  await expect(page.locator('.modal')).toHaveCount(0);
+  const modal = page.locator('.modal');
+  await expect(modal).toBeVisible();
+  await expect(modal.locator('.modal-header')).toContainText('Unsaved Changes to "Layout 2"');
+  // The untouched legacy template interpolates an undefined layout.dashboard
+  // counter, so the count is blank even though the modal is correctly opened.
+  await expect(modal.locator('.modal-body')).toContainText('You have');
+  await expect(modal.locator('.modal-body')).toContainText('unsaved changes');
+  return modal;
+}
+
+test('switching with unsaved changes opens the Save Changes modal', async ({ page }) => {
+  await switchWithModal(page);
 });
 
-test('a changed layout switches directly instead of offering Save', async ({ page }) => {
-  await makeUnsavedChange(page);
-  await tabs(page).nth(1).click();
+test('Save saves changes then switches layouts', async ({ page }) => {
+  const modal = await switchWithModal(page);
+  await modal.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(tabs(page).nth(1)).toHaveClass(/active/);
-  await expect(page.locator('.modal')).toHaveCount(0);
+  await expect(modal).toHaveCount(0);
 });
 
-test("a changed layout switches directly instead of offering Don't Save", async ({ page }) => {
-  await makeUnsavedChange(page);
-  await tabs(page).nth(1).click();
+test("Don't Save switches without saving the current dashboard", async ({ page }) => {
+  const modal = await switchWithModal(page);
+  await modal.locator('.modal-footer button').filter({ hasText: "Don't Save" }).click();
   await expect(tabs(page).nth(1)).toHaveClass(/active/);
-  await expect(page.locator('.modal')).toHaveCount(0);
+  await expect(modal).toHaveCount(0);
 });

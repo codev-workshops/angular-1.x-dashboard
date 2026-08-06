@@ -18,6 +18,26 @@ test('layout state round-trips through localStorage', async ({ page }) => {
   await expect(page.locator('.layout-tabs')).toContainText('Custom');
 });
 
+test('edited widget title round-trips through localStorage', async ({ page }) => {
+  await clearDemoStorage(page);
+  await openRoute(page, '/');
+  await widgets(page).first().locator('span.widget-title').dblclick();
+  await widgets(page).first().locator('input.form-control').fill('Persisted Title');
+  await widgets(page).first().locator('input.form-control').press('Enter');
+  await page.reload();
+  await expect(widgets(page).first().locator('span.widget-title')).toHaveText('Persisted Title');
+});
+
+test('collapse state is not persisted by WidgetModel serialization', async ({ page }) => {
+  await clearDemoStorage(page);
+  await openRoute(page, '/');
+  const widget = widgets(page).first();
+  await widget.locator('.buttons .glyphicon-minus').click();
+  await expect(widget.locator('.widget-content')).toHaveCSS('display', 'none');
+  await page.reload();
+  await expect(widgets(page).first().locator('.widget-content')).not.toHaveCSS('display', 'none');
+});
+
 test('stale dashboard state falls back to default widgets', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('demo_simple', JSON.stringify({ widgets: [{ name: 'time' }], hash: 'wrong' }));

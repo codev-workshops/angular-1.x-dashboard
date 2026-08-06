@@ -17,12 +17,33 @@ const mappings = [
   ['/src/', path.join(repo, 'src')],
 ];
 
+function partialFiles(directory, result = {}) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const filename = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      partialFiles(filename, result);
+    } else if (entry.isFile() && path.extname(entry.name) === '.html') {
+      result[entry.name] = filename;
+    }
+  }
+  return result;
+}
+
+const flattenedPartials = partialFiles(path.join(repo, 'src/components'),
+  partialFiles(path.join(repo, 'src/app/template')));
+
 function fileFor(urlPath) {
   if (urlPath === '/' || urlPath === '/index.html') {
     return path.join(root, 'index.html');
   }
   if (urlPath === '/app/template/WidgetSpecificSettings.html') {
     return path.join(repo, 'src/app/template/widgetSpecificSettings.html');
+  }
+  if (urlPath.startsWith('/template/')) {
+    const basename = path.basename(urlPath);
+    if (flattenedPartials[basename]) {
+      return flattenedPartials[basename];
+    }
   }
   for (const [prefix, directory] of mappings) {
     if (urlPath.startsWith(prefix)) {

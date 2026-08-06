@@ -5,3 +5,6 @@ bower_components/
 dist/
 /demo/
 /coverage
+playwright-results.json
+test-results/
+playwright-report/

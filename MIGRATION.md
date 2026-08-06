@@ -29,26 +29,95 @@ E2E_BASE_URL=http://127.0.0.1:8000 npm run test:e2e
 
 ## Green parity run
 
-The complete Chromium run is **45 tests passed** across 11 spec files:
+The complete Chromium run is **48 tests passed** across 11 spec files:
 
-- `navigation.spec.ts` — 3
-- `widgets.spec.ts` — 6
-- `reorder.spec.ts` — 1
-- `resize.spec.ts` — 4
-- `settings-modal.spec.ts` — 4
-- `explicit-save.spec.ts` — 3
-- `layouts.spec.ts` — 7
-- `layouts-explicit-save.spec.ts` — 3
-- `dynamic-options.spec.ts` — 2
-- `dynamic-data.spec.ts` — 5
-- `persistence.spec.ts` — 7
+### `navigation.spec.ts` — 3
+
+- all hash routes render their description and dashboard
+- navbar links navigate using hash routes
+- unknown hash redirects to the root route
+
+### `widgets.spec.ts` — 7
+
+- default widgets render with expected count and labels
+- each widget button adds its widget type
+- a widget can be removed
+- a widget can collapse and expand
+- widget title editing persists after submit
+- Clear empties the dashboard and Default Widgets restores it
+- prependWidget inserts a Prepend Widget at position zero
+
+### `reorder.spec.ts` — 1
+
+- real mouse drag reorders widgets and survives reload
+
+### `resize.spec.ts` — 4
+
+- east resize shows a marquee, changes width, and persists
+- minWidth prevents a widget from shrinking below its minimum
+- heightToWidthRatio widget maintains approximately one quarter height
+- vertical handles are present for the resize demo widgets
+
+### `settings-modal.spec.ts` — 5
+
+- widget-level onSettingsClose ignores Title changes on OK
+- dashboard-level onSettingsClose applies a title and persists it
+- Cancel and close discard modal edits
+- configurable widget exposes limit partial and changing it takes effect
+- override modal widget opens its override template
+
+### `explicit-save.spec.ts` — 3
+
+- save button starts all saved and disabled
+- saveable changes increment, save resets, and saved state survives reload
+- unsaved changes are lost on reload
+
+### `layouts.spec.ts` — 7
+
+- three default layout tabs render with Layout 1 active
+- switching tabs swaps the active dashboard
+- plus creates a Custom layout and activates it
+- a custom layout can be renamed and rejects blank title
+- a removable custom layout is removed and previous layout activates
+- locked default layouts have no remove icon and are not renameable
+- layout state and active tab persist across reload
+
+### `layouts-explicit-save.spec.ts` — 3
+
+- switching with unsaved changes opens the Save Changes modal
+- Save saves changes then switches layouts
+- Don't Save switches without saving the current dashboard
+
+### `dynamic-options.spec.ts` — 2
+
+- List and Thumbnail toggles recreate the widget and active button is disabled
+- dynamic options toolbar is hidden
+
+### `dynamic-data.spec.ts` — 5
+
+- both cart widgets render
+- valid item updates detail and summary metrics
+- same item merges quantity and recomputes unit price
+- invalid submits are rejected without changing the cart
+- Auto Fill Cart adds six items and removing one recomputes totals
+
+### `persistence.spec.ts` — 8
+
+- root widget state round-trips through localStorage
+- layout state round-trips through localStorage
+- edited widget title round-trips through localStorage
+- collapse state is not persisted by WidgetModel serialization
+- stale dashboard state falls back to default widgets
+- malformed dashboard state falls back to default widgets
+- stale layout state falls back to default layouts
+- malformed layout state falls back to default layouts
 
 Command and result:
 
 ```text
 $ npx playwright test --reporter=line --workers=4
 Running 45 tests using 4 workers
-45 passed (12.4s)
+48 passed (10.7s)
 ```
 
 The suite uses hash routes and only the migration DOM/CSS contract. It uses
@@ -56,10 +125,18 @@ incremental mouse sequences for sortable reorder and resize interactions.
 
 ## Legacy behavior notes
 
-- The layouts explicit-save demo displays the `save changes (1)` state after a
-  dashboard change, but switching layouts proceeds directly without showing
-  the described “Unsaved Changes” modal. The parity suite records this actual
-  behavior.
+- The committed distribution contains the SaveChangesModal template under the
+  component path, not a flattened `template/SaveChangesModal.html` entry.
+  Before the server fix, switching layouts requested that flattened URL and
+  received a 404. The in-repository server now recursively maps every
+  `/template/<basename>` request to matching app/component partials. Network
+  verification shows `200` for `/template/SaveChangesModal.html`, and the
+  untouched app opens the modal.
+- The modal title and actions work as expected. Its body renders “You have
+  unsaved changes...” but the numeric interpolation is blank because the
+  untouched legacy template reads `layout.dashboard.unsavedChangeCount`, while
+  the count is held elsewhere. The suite records this real legacy rendering
+  discrepancy without weakening modal/action coverage.
 - The default custom-settings modal accepts OK but the legacy widget title
   remains unchanged; the suite records the actual result.
 - In the layouts demo, Layout 3 is intentionally unlocked and has a remove
@@ -67,3 +144,5 @@ incremental mouse sequences for sortable reorder and resize interactions.
 - The legacy override modal template uses a differently cased filename on
   disk. The reproducible server supplies the case-compatible URL mapping needed
   on Linux.
+- `WidgetModel.serialize()` stores `title`, `name`, `style`, `size`, and related
+  fields, but not `contentStyle`; collapse/expand therefore resets after reload.
