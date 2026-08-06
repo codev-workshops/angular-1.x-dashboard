@@ -137,6 +137,13 @@ incremental mouse sequences for sortable reorder and resize interactions.
   untouched legacy template reads `layout.dashboard.unsavedChangeCount`, while
   the count is held elsewhere. The suite records this real legacy rendering
   discrepancy without weakening modal/action coverage.
+- Save and Don't Save are distinguishable in the legacy storage path:
+  Save invokes `current.dashboard.saveDashboard()`, producing
+  `states["1"] = { widgets: [] }`; Don't Save only invokes
+  `_makeLayoutActive()`, leaving `states["1"]` absent. After reload, both
+  paths visibly show the five default widgets because an empty saved widget
+  list intentionally falls back to `defaultWidgets`; the parity tests assert
+  both the visible fallback and the differing persisted state.
 - The default custom-settings modal accepts OK but the legacy widget title
   remains unchanged; the suite records the actual result.
 - In the layouts demo, Layout 3 is intentionally unlocked and has a remove

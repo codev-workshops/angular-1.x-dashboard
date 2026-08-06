@@ -63,6 +63,10 @@ test('locked default layouts have no remove icon and are not renameable', async 
   await expect(tabs(page).nth(0).locator('.remove-layout-icon')).toHaveCount(0);
   await expect(tabs(page).nth(1).locator('.remove-layout-icon')).toHaveCount(0);
   await expect(tabs(page).nth(2).locator('.remove-layout-icon')).toHaveCount(1);
+  const title = tabs(page).nth(0).locator('span').filter({ hasText: 'Layout 1' });
+  await title.dblclick();
+  await expect(tabs(page).nth(0).locator('input')).toBeHidden();
+  await expect(title).toHaveText('Layout 1');
 });
 
 test('layout state and active tab persist across reload', async ({ page }) => {

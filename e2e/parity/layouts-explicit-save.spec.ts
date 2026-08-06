@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clearDemoStorage, openRoute } from './helpers';
+import { clearDemoStorage, openRoute, storageValue } from './helpers';
 
 function tabs(page: import('@playwright/test').Page) {
   return page.locator('.nav.nav-tabs.layout-tabs > li');
@@ -37,6 +37,25 @@ test('Save saves changes then switches layouts', async ({ page }) => {
   await modal.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(tabs(page).nth(1)).toHaveClass(/active/);
   await expect(modal).toHaveCount(0);
+  await tabs(page).nth(0).click();
+  await expect(tabs(page).nth(0)).toHaveClass(/active/);
+  await expect(page.locator('.btn-toolbar button.btn-success')).toHaveText('all saved');
+  // SaveChangesModal calls current.dashboard.saveDashboard(), which stores the
+  // cleared widget list in LayoutStorage.states before switching. On reload,
+  // the legacy dashboard intentionally falls back to defaultWidgets for an
+  // empty saved list, so the visible Layout 1 is restored to its defaults.
+  const saved = JSON.parse((await storageValue(page, 'demo-layouts-explicit-save'))!);
+  expect(saved.states['1']).toEqual({ widgets: [] });
+  await page.reload();
+  await expect(tabs(page).nth(0)).toHaveClass(/active/);
+  await expect(page.locator('.btn-toolbar button.btn-success')).toHaveText('all saved');
+  await expect(page.locator('.label.label-primary:visible')).toHaveText([
+    'random',
+    'time',
+    'datamodel',
+    'random',
+    'time',
+  ]);
 });
 
 test("Don't Save switches without saving the current dashboard", async ({ page }) => {
@@ -44,4 +63,22 @@ test("Don't Save switches without saving the current dashboard", async ({ page }
   await modal.locator('.modal-footer button').filter({ hasText: "Don't Save" }).click();
   await expect(tabs(page).nth(1)).toHaveClass(/active/);
   await expect(modal).toHaveCount(0);
+  await tabs(page).nth(0).click();
+  await expect(tabs(page).nth(0)).toHaveClass(/active/);
+  await expect(page.locator('.btn-toolbar button.btn-success')).toHaveText('all saved');
+  // Don't Save rejects the modal promise, so dashboardLayouts only calls
+  // _makeLayoutActive and LayoutStorage.save(); the cleared dashboard never
+  // enters LayoutStorage.states.
+  const saved = JSON.parse((await storageValue(page, 'demo-layouts-explicit-save'))!);
+  expect(saved.states).not.toHaveProperty('1');
+  await page.reload();
+  await expect(tabs(page).nth(0)).toHaveClass(/active/);
+  await expect(page.locator('.btn-toolbar button.btn-success')).toHaveText('all saved');
+  await expect(page.locator('.label.label-primary:visible')).toHaveText([
+    'random',
+    'time',
+    'datamodel',
+    'random',
+    'time',
+  ]);
 });
